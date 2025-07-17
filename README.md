@@ -5,9 +5,11 @@
 Run safety audits on environment variables, configuration files, and hidden routes to prevent common mistakes before going live.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/Grazulex/laravel-safeguard/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/Grazulex/laravel-safeguard/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/Grazulex/laravel-safeguard/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/Grazulex/laravel-safeguard/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/Grazulex/laravel-safeguard/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/Grazulex/laravel-safeguard/actions?query=workflow%3ATests+branch%3Amain)
+[![GitHub Code Quality Action Status](https://img.shields.io/github/actions/workflow/status/Grazulex/laravel-safeguard/code-quality.yml?branch=main&label=code%20quality&style=flat-square)](https://github.com/Grazulex/laravel-safeguard/actions?query=workflow%3A"Code+Quality"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
+[![License](https://img.shields.io/packagist/l/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
+[![PHP Version Require](https://img.shields.io/packagist/php-v/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
 
 ## 🧠 Problem Solved
 
