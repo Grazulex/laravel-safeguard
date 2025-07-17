@@ -19,8 +19,8 @@ it('config has expected structure', function () {
 
     expect($config)
         ->toBeArray()
-        ->toHaveKey('state_machines_path')
-        ->toHaveKey('default_state_field')
-        ->toHaveKey('events')
-        ->toHaveKey('history');
+        ->toHaveKey('rules')
+        ->toHaveKey('environments')
+        ->toHaveKey('scan_paths')
+        ->toHaveKey('secret_patterns');
 });

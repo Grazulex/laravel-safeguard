@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\SafeguardResult;
+
+final class {{ class }} implements SafeguardRule
+{
+    /**
+     * Get the unique identifier for this rule.
+     */
+    public function id(): string
+    {
+        return '{{ id }}';
+    }
+
+    /**
+     * Get the description of what this rule checks.
+     */
+    public function description(): string
+    {
+        return 'TODO: Describe what this rule checks';
+    }
+
+    /**
+     * Execute the security check.
+     */
+    public function check(): SafeguardResult
+    {
+        // TODO: Implement your security check logic here
+        
+        return SafeguardResult::pass($this->id(), 'Check passed');
+    }
+
+    /**
+     * Check if this rule applies to the given environment.
+     */
+    public function appliesToEnvironment(string $environment): bool
+    {
+        return true; // Apply to all environments by default
+    }
+
+    /**
+     * Get the severity level of this rule.
+     */
+    public function severity(): string
+    {
+        return '{{ severity }}';
+    }
+}

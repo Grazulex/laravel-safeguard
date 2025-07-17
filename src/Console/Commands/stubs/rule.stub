@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\SafeguardResult;
+
+class {{class}} implements SafeguardRule
+{
+    public function id(): string
+    {
+        return '{{id}}';
+    }
+
+    public function description(): string
+    {
+        return '{{description}}';
+    }
+
+    public function check(): SafeguardResult
+    {
+        // TODO: Implement your rule logic here
+        
+        // Example of a passing check:
+        // return SafeguardResult::pass('Check passed');
+        
+        // Example of a failing check:
+        // return SafeguardResult::fail('Check failed', ['details' => 'Additional context']);
+        
+        return SafeguardResult::pass('Rule not yet implemented');
+    }
+
+    public function appliesToEnvironment(string $environment): bool
+    {
+        // Return true to run in all environments, or customize as needed
+        return true;
+    }
+
+    public function severity(): string
+    {
+        return '{{severity}}';
+    }
+}

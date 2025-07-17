@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Results\SafeguardResult;
+
+class {{ class }} implements SafeguardRule
+{
+    public function id(): string
+    {
+        return '{{ ruleId }}';
+    }
+
+    public function description(): string
+    {
+        return 'Description of what this security rule checks';
+    }
+
+    public function check(): SafeguardResult
+    {
+        // TODO: Implement your security check logic here
+        
+        // Example of a failing check:
+        // return SafeguardResult::failed('Security issue detected', '{{ severity }}');
+        
+        // Example of a passing check:
+        // return SafeguardResult::passed('Security check passed');
+        
+        // Example with details:
+        // return SafeguardResult::critical('Critical security issue', [
+        //     'details' => 'Additional information about the issue',
+        //     'recommendation' => 'How to fix this issue',
+        // ]);
+
+        return SafeguardResult::passed('{{ class }} check not yet implemented');
+    }
+
+    public function appliesToEnvironment(string $environment): bool
+    {
+        // Return true if this rule should run in the given environment
+        // Examples:
+        // return true; // Run in all environments
+        // return $environment === 'production'; // Only in production
+        // return in_array($environment, ['production', 'staging']); // Production and staging only
+        
+        return true;
+    }
+
+    public function severity(): string
+    {
+        return '{{ severity }}';
+    }
+}
