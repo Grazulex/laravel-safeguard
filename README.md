@@ -1,15 +1,18 @@
-# 🔐 Laravel Safeguard
+# Laravel Safeguard
 
-**Configurable security checks for Laravel applications**
-
-Run safety audits on environment variables, configuration files, and hidden routes to prevent common mistakes before going live.
-
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/Grazulex/laravel-safeguard/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/Grazulex/laravel-safeguard/actions?query=workflow%3ATests+branch%3Amain)
-[![GitHub Code Quality Action Status](https://img.shields.io/github/actions/workflow/status/Grazulex/laravel-safeguard/code-quality.yml?branch=main&label=code%20quality&style=flat-square)](https://github.com/Grazulex/laravel-safeguard/actions?query=workflow%3A"Code+Quality"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
-[![License](https://img.shields.io/packagist/l/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
-[![PHP Version Require](https://img.shields.io/packagist/php-v/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
+<div align="center">
+  <img src="logo.png" alt="Laravel Safeguard" width="100">
+  <p><strong>Configurable security checks for Laravel applications — Run safety audits on environment variables, configuration files, and hidden routes to prevent common mistakes before going live.</strong></p>
+  
+  [![Latest Version](https://img.shields.io/packagist/v/grazulex/laravel-safeguard)](https://packagist.org/packages/grazulex/laravel-safeguard)
+  [![Total Downloads](https://img.shields.io/packagist/dt/grazulex/laravel-safeguard)](https://packagist.org/packages/grazulex/laravel-safeguard)
+  [![License](https://img.shields.io/github/license/grazulex/laravel-safeguard)](LICENSE.md)
+  [![PHP Version](https://img.shields.io/badge/php-%5E8.3-blue)](https://php.net)
+  [![Laravel Version](https://img.shields.io/badge/laravel-%5E12.19-red)](https://laravel.com)
+  [![Tests](https://github.com/Grazulex/laravel-safeguard/workflows/Tests/badge.svg)](https://github.com/Grazulex/laravel-safeguard/actions)
+  [![Code Quality](https://github.com/Grazulex/laravel-safeguard/workflows/Code%20Quality/badge.svg)](https://github.com/Grazulex/laravel-safeguard/actions)
+  [![Code Style](https://img.shields.io/badge/code%20style-pint-orange)](https://github.com/laravel/pint)
+</div>
 
 ## 🧠 Problem Solved
 
