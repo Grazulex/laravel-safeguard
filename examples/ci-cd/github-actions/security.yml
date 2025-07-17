@@ -1,0 +1,201 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [staging, production]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+        coverage: none
+        
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+          
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest --no-interaction
+      
+    - name: Create .env file
+      run: |
+        cp .env.example .env
+        php artisan key:generate
+        
+    - name: Run security checks for ${{ matrix.environment }}
+      id: security-check
+      continue-on-error: true
+      run: |
+        php artisan safeguard:check \
+          --env=${{ matrix.environment }} \
+          --format=json \
+          --ci > security-report-${{ matrix.environment }}.json
+        
+        # Capture exit code
+        echo "exit_code=$?" >> $GITHUB_OUTPUT
+        
+    - name: Parse security results
+      id: parse-results
+      run: |
+        if [ -f "security-report-${{ matrix.environment }}.json" ]; then
+          STATUS=$(jq -r '.status' security-report-${{ matrix.environment }}.json)
+          TOTAL=$(jq -r '.summary.total' security-report-${{ matrix.environment }}.json)
+          PASSED=$(jq -r '.summary.passed' security-report-${{ matrix.environment }}.json)
+          FAILED=$(jq -r '.summary.failed' security-report-${{ matrix.environment }}.json)
+          
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-report-${{ matrix.environment }}
+        path: security-report-${{ matrix.environment }}.json
+        retention-days: 30
+        
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = `security-report-${{ matrix.environment }}.json`;
+          
+          if (!fs.existsSync(path)) return;
+          
+          const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const environment = '${{ matrix.environment }}';
+          
+          let comment = `## 🔐 Security Audit Results - ${environment}\n\n`;
+          
+          if (report.status === 'passed') {
+            comment += `✅ **All security checks passed!**\n\n`;
+          } else {
+            comment += `❌ **Security issues found**\n\n`;
+          }
+          
+          comment += `**Environment:** ${report.environment}\n`;
+          comment += `**Total Checks:** ${report.summary.total}\n`;
+          comment += `**Passed:** ${report.summary.passed}\n`;
+          comment += `**Failed:** ${report.summary.failed}\n\n`;
+          
+          const failedResults = report.results.filter(r => r.status === 'failed');
+          if (failedResults.length > 0) {
+            comment += `### ❌ Failed Checks\n\n`;
+            for (const result of failedResults) {
+              comment += `- **${result.rule}**: ${result.message}\n`;
+              if (result.details && result.details.recommendation) {
+                comment += `  - 💡 Recommendation: ${result.details.recommendation}\n`;
+              }
+            }
+            comment += `\n`;
+          }
+          
+          const warningResults = report.results.filter(r => r.severity === 'warning' && r.status === 'passed');
+          if (warningResults.length > 0) {
+            comment += `### ⚠️ Warnings\n\n`;
+            for (const result of warningResults) {
+              comment += `- **${result.rule}**: ${result.message}\n`;
+            }
+            comment += `\n`;
+          }
+          
+          comment += `<details>\n`;
+          comment += `<summary>View full report</summary>\n\n`;
+          comment += `\`\`\`json\n${JSON.stringify(report, null, 2)}\n\`\`\`\n`;
+          comment += `</details>\n`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+          
+    - name: Fail job if security issues found in production
+      if: matrix.environment == 'production' && steps.parse-results.outputs.status == 'failed'
+      run: |
+        echo "❌ Security issues found in production environment!"
+        echo "Failed checks: ${{ steps.parse-results.outputs.failed }}"
+        exit 1
+        
+    - name: Generate security badge
+      if: matrix.environment == 'production'
+      run: |
+        if [ "${{ steps.parse-results.outputs.status }}" = "passed" ]; then
+          echo "![Security](https://img.shields.io/badge/security-passing-brightgreen)" > security-badge.md
+        else
+          echo "![Security](https://img.shields.io/badge/security-${{ steps.parse-results.outputs.failed }}%20issues-red)" > security-badge.md
+        fi
+        
+    - name: Upload security badge
+      if: matrix.environment == 'production'
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-badge
+        path: security-badge.md
+
+  # Aggregate results job
+  security-summary:
+    needs: security
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Download all security reports
+      uses: actions/download-artifact@v3
+      with:
+        path: security-reports/
+        
+    - name: Generate summary report
+      run: |
+        echo "# 🔐 Security Audit Summary" > security-summary.md
+        echo "" >> security-summary.md
+        echo "| Environment | Status | Total | Passed | Failed |" >> security-summary.md
+        echo "|-------------|--------|-------|--------|--------|" >> security-summary.md
+        
+        for env in staging production; do
+          if [ -f "security-reports/security-report-${env}/security-report-${env}.json" ]; then
+            STATUS=$(jq -r '.status' "security-reports/security-report-${env}/security-report-${env}.json")
+            TOTAL=$(jq -r '.summary.total' "security-reports/security-report-${env}/security-report-${env}.json")
+            PASSED=$(jq -r '.summary.passed' "security-reports/security-report-${env}/security-report-${env}.json")
+            FAILED=$(jq -r '.summary.failed' "security-reports/security-report-${env}/security-report-${env}.json")
+            
+            if [ "$STATUS" = "passed" ]; then
+              ICON="✅"
+            else
+              ICON="❌"
+            fi
+            
+            echo "| ${env} | ${ICON} ${STATUS} | ${TOTAL} | ${PASSED} | ${FAILED} |" >> security-summary.md
+          fi
+        done
+        
+    - name: Upload summary report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-summary
+        path: security-summary.md

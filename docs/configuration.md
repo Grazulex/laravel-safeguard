@@ -1,0 +1,229 @@
+# Configuration Guide
+
+The Laravel Safeguard configuration file (`config/safeguard.php`) allows you to customize which security rules are enabled and how they behave.
+
+## Basic Configuration
+
+After publishing the config file, you'll find these main sections:
+
+### Rules Configuration
+
+Enable or disable specific security rules:
+
+```php
+'rules' => [
+    // Environment & Configuration Rules
+    'env_debug_false_in_production' => true,
+    'app_key_is_set' => true,
+    'env_has_all_required_keys' => true,
+    'no_secrets_in_code' => true,
+
+    // Security Rules
+    'csrf_enabled' => true,
+    'secure_cookies_in_production' => true,
+    'storage_writable' => true,
+    'https_enforced_in_production' => false,
+
+    // File System Rules
+    'env_file_permissions' => true,
+    'sensitive_files_hidden' => true,
+],
+```
+
+### Environment-Specific Rules
+
+Configure different rules for different environments:
+
+```php
+'environments' => [
+    'production' => [
+        'env_debug_false_in_production',
+        'app_key_is_set',
+        'secure_cookies_in_production',
+        'https_enforced_in_production',
+        'env_file_permissions',
+        'sensitive_files_hidden',
+    ],
+    'staging' => [
+        'env_debug_false_in_production',
+        'app_key_is_set',
+        'csrf_enabled',
+    ],
+    'local' => [
+        'app_key_is_set',
+        'storage_writable',
+    ],
+],
+```
+
+### Scan Paths
+
+Specify which directories to scan for security issues:
+
+```php
+'scan_paths' => [
+    'app/',
+    'config/',
+    'routes/',
+    'resources/views/',
+    'database/seeders/',
+],
+```
+
+### Secret Patterns
+
+Define patterns to detect hardcoded secrets:
+
+```php
+'secret_patterns' => [
+    '*_KEY',
+    '*_SECRET',
+    '*_TOKEN',
+    '*_PASSWORD',
+    'API_*',
+    'AWS_*',
+    'STRIPE_*',
+    'PAYPAL_*',
+    'TWILIO_*',
+    'MAILGUN_*',
+],
+```
+
+## Advanced Configuration
+
+### Custom Rules Path
+
+Specify where your custom security rules are located:
+
+```php
+'custom_rules_path' => app_path('SafeguardRules'),
+'custom_rules_namespace' => 'App\\SafeguardRules',
+```
+
+### Required Environment Variables
+
+Define which environment variables must be present:
+
+```php
+'required_env_vars' => [
+    'APP_KEY',
+    'APP_ENV',
+    'APP_DEBUG',
+    'DB_CONNECTION',
+    'DB_HOST',
+    'DB_PORT',
+    'DB_DATABASE',
+],
+```
+
+### Sensitive Files
+
+List files that should not be web-accessible:
+
+```php
+'sensitive_files' => [
+    '.env',
+    '.env.example',
+    'composer.json',
+    'composer.lock',
+    'package.json',
+    'package-lock.json',
+    'artisan',
+    'phpunit.xml',
+    'README.md',
+],
+```
+
+## Configuration Examples
+
+### Production-Only Setup
+
+For a strict production-only security check:
+
+```php
+'rules' => [
+    'env_debug_false_in_production' => true,
+    'secure_cookies_in_production' => true,
+    'https_enforced_in_production' => true,
+    'env_file_permissions' => true,
+    // Disable development-focused rules
+    'storage_writable' => false,
+    'no_secrets_in_code' => false,
+],
+
+'environments' => [
+    'production' => [
+        'env_debug_false_in_production',
+        'secure_cookies_in_production',
+        'https_enforced_in_production',
+        'env_file_permissions',
+    ],
+],
+```
+
+### Development-Friendly Setup
+
+For development environments with relaxed rules:
+
+```php
+'rules' => [
+    'app_key_is_set' => true,
+    'storage_writable' => true,
+    'csrf_enabled' => true,
+    // Disable strict production rules
+    'env_debug_false_in_production' => false,
+    'https_enforced_in_production' => false,
+],
+```
+
+### CI/CD Optimized Setup
+
+For continuous integration environments:
+
+```php
+'rules' => [
+    'env_has_all_required_keys' => true,
+    'no_secrets_in_code' => true,
+    'app_key_is_set' => true,
+    // Disable environment-specific rules
+    'env_debug_false_in_production' => false,
+    'secure_cookies_in_production' => false,
+],
+
+'scan_paths' => [
+    'app/',
+    'config/',
+    'routes/',
+    // Exclude test directories for faster scanning
+],
+```
+
+## Environment Variables
+
+You can override configuration values using environment variables:
+
+```bash
+# .env
+SAFEGUARD_ENABLED=true
+SAFEGUARD_FAIL_ON_ERROR=true
+```
+
+Then in your config file:
+
+```php
+'fail_on_error' => env('SAFEGUARD_FAIL_ON_ERROR', false),
+```
+
+## Best Practices
+
+1. **Start Small**: Enable a few critical rules first, then gradually add more
+2. **Environment-Specific**: Use different rule sets for different environments
+3. **Custom Rules**: Create custom rules for your specific security requirements
+4. **Regular Updates**: Review and update your configuration as your application evolves
+5. **Documentation**: Document any custom configurations for your team
+
+## Next Steps
+
+- [Learn about available security rules](rules-reference.md)
+- [Create custom rules](custom-rules.md)
+- [Set up environment-specific configurations](environment-rules.md)

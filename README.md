@@ -307,6 +307,31 @@ Run with coverage:
 composer test -- --coverage
 ```
 
+## 📚 Documentation
+
+For comprehensive documentation, see the [`docs/`](docs/) directory:
+
+- **[Installation Guide](docs/installation.md)** - Step-by-step installation and setup
+- **[Quick Start](docs/quick-start.md)** - Get up and running in minutes
+- **[Configuration Guide](docs/configuration.md)** - Comprehensive configuration options
+- **[Security Rules Reference](docs/rules-reference.md)** - Complete list of available rules
+- **[Custom Rules Guide](docs/custom-rules.md)** - Create your own security rules
+- **[CI/CD Integration](docs/ci-cd-integration.md)** - GitHub Actions, GitLab CI, and more
+- **[Commands Reference](docs/commands.md)** - All available artisan commands
+- **[Output Formats](docs/output-formats.md)** - CLI, JSON, and CI-friendly outputs
+- **[FAQ](docs/faq.md)** - Frequently asked questions
+- **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
+
+## 💡 Examples
+
+The [`examples/`](examples/) directory contains practical examples and code samples:
+
+- **[Basic Usage](examples/basic-usage/)** - Simple examples to get started
+- **[Custom Rules](examples/custom-rules/)** - Real-world custom security rules
+- **[Configuration](examples/configuration/)** - Various configuration setups
+- **[CI/CD](examples/ci-cd/)** - Ready-to-use CI/CD pipeline configurations
+- **[Scripts](examples/scripts/)** - Utility scripts for automation
+
 ## 📈 Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
