@@ -1,0 +1,97 @@
+{
+    "name": "grazulex/laravel-safeguard",
+    "description": "Configurable security checks for Laravel applications. Run safety audits on environment variables, configuration files, and hidden routes to prevent common mistakes before going live.",
+    "keywords": [
+        "laravel",
+        "security",
+        "safeguard",
+        "env",
+        "check",
+        "config",
+        "production",
+        "rules",
+        "secure",
+        "audit",
+        "hardening",
+        "php8.3",
+        "laravel12",
+        "cli",
+        "clean-code"
+    ],
+    "type": "library",
+    "homepage": "https://github.com/grazulex/laravel-safeguard",
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^12.19",
+        "nesbot/carbon": "^3.10",
+        "illuminate/contracts": "^12.0",
+        "symfony/yaml": "^7.3"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.22",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin-laravel": "^3.2",
+        "larastan/larastan": "^3.4",
+        "rector/rector": "^2.0",
+        "doctrine/dbal": "^4.2",
+        "orchestra/testbench": "^10.0"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Grazulex\\LaravelSafeguard\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Grazulex\\LaravelSafeguard\\LaravelSafeguardServiceProvider"
+            ]
+        }
+    },
+    "authors": [
+        {
+            "name": "Jean-Marc Strauven",
+            "email": "jms@grazulex.be",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/Grazulex/laravel-safeguard/issues",
+        "source": "https://github.com/Grazulex/laravel-safeguard",
+        "forum": "https://github.com/Grazulex/laravel-safeguard/discussions",
+        "docs": "https://github.com/Grazulex/laravel-safeguard#readme"
+    },
+    "scripts": {
+        "test": [
+            "./vendor/bin/pest --colors=always --coverage"
+        ],
+        "pint": [
+            "./vendor/bin/pint"
+        ],
+        "phpstan": [
+            "./vendor/bin/phpstan analyse --memory-limit=2G --configuration=phpstan.neon"
+        ],
+        "rector": [
+            "./vendor/bin/rector"
+        ],
+        "full": [
+            "composer run-script pint",
+            "composer run-script phpstan",
+            "composer run-script rector",
+            "composer run-script test"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
