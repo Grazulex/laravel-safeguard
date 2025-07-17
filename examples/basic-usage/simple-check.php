@@ -7,12 +7,12 @@
  * for running security checks in a Laravel application.
  */
 
-require_once __DIR__ . '/../../../vendor/autoload.php';
+// Note: In a real Laravel application, this would be:
+// require_once __DIR__ . '/../../../vendor/autoload.php';
+// For this example, we're just demonstrating the concept
 
-use Grazulex\LaravelSafeguard\Services\SafeguardManager;
-
-// Note: In a real Laravel application, you would use:
-// php artisan safeguard:check
+// Note: This example demonstrates the concept
+// In a real Laravel application, you would run: php artisan safeguard:check
 
 echo "🔐 Laravel Safeguard - Basic Usage Example\n";
 echo "==========================================\n\n";

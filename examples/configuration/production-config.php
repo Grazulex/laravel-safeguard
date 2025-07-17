@@ -287,7 +287,7 @@ return [
     | Custom Rules Configuration
     |--------------------------------------------------------------------------
     */
-    'custom_rules_path' => app_path('SafeguardRules'),
+    'custom_rules_path' => 'app/SafeguardRules', // app_path('SafeguardRules'),
     'custom_rules_namespace' => 'App\\SafeguardRules',
 
     /*

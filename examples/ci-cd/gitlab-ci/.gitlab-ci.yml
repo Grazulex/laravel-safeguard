@@ -1,0 +1,372 @@
+stages:
+  - test
+  - security
+  - deploy
+
+variables:
+  COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
+  PHP_VERSION: "8.3"
+
+# Cache Composer dependencies
+cache:
+  paths:
+    - .composer-cache/
+    - vendor/
+
+# Default before script
+before_script:
+  - php -v
+  - composer install --prefer-dist --no-progress --no-interaction
+  - cp .env.example .env
+  - php artisan key:generate
+
+# Basic tests
+test:
+  stage: test
+  image: php:${PHP_VERSION}-cli
+  script:
+    - vendor/bin/pest
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Security audit for staging
+security_staging:
+  stage: security
+  image: php:${PHP_VERSION}-cli
+  script:
+    - |
+      echo "🔐 Running security audit for staging environment"
+      php artisan safeguard:check \
+        --env=staging \
+        --format=json \
+        --ci > security-staging.json
+      
+      # Parse results
+      if command -v jq >/dev/null 2>&1; then
+        STATUS=$(jq -r '.status' security-staging.json)
+        FAILED=$(jq -r '.summary.failed' security-staging.json)
+        
+        echo "Security Status: $STATUS"
+        echo "Failed Checks: $FAILED"
+        
+        if [ "$STATUS" = "failed" ]; then
+          echo "Security issues found in staging:"
+          jq -r '.results[] | select(.status == "failed") | "- " + .rule + ": " + .message' security-staging.json
+        fi
+      fi
+  artifacts:
+    when: always
+    paths:
+      - security-staging.json
+    reports:
+      junit: security-staging.json
+    expire_in: 1 week
+  only:
+    - develop
+    - merge_requests
+
+# Security audit for production
+security_production:
+  stage: security
+  image: php:${PHP_VERSION}-cli
+  script:
+    - |
+      echo "🔐 Running security audit for production environment"
+      php artisan safeguard:check \
+        --env=production \
+        --format=json \
+        --ci \
+        --fail-on-error > security-production.json
+      
+      # Parse results
+      if command -v jq >/dev/null 2>&1; then
+        STATUS=$(jq -r '.status' security-production.json)
+        PASSED=$(jq -r '.summary.passed' security-production.json)
+        FAILED=$(jq -r '.summary.failed' security-production.json)
+        
+        echo "Security Status: $STATUS"
+        echo "Passed Checks: $PASSED"
+        echo "Failed Checks: $FAILED"
+        
+        if [ "$STATUS" = "failed" ]; then
+          echo "❌ Critical security issues found in production configuration!"
+          jq -r '.results[] | select(.status == "failed") | "- " + .rule + ": " + .message' security-production.json
+          exit 1
+        else
+          echo "✅ All security checks passed for production!"
+        fi
+      fi
+  artifacts:
+    when: always
+    paths:
+      - security-production.json
+    reports:
+      junit: security-production.json
+    expire_in: 1 month
+  only:
+    - main
+
+# Multi-environment security check
+security_multi_env:
+  stage: security
+  image: php:${PHP_VERSION}-cli
+  parallel:
+    matrix:
+      - ENVIRONMENT: [local, staging, production]
+  script:
+    - |
+      echo "🔐 Running security audit for $ENVIRONMENT environment"
+      
+      # Determine if we should fail on error
+      FAIL_FLAG=""
+      if [ "$ENVIRONMENT" = "production" ]; then
+        FAIL_FLAG="--fail-on-error"
+      fi
+      
+      # Run security check
+      php artisan safeguard:check \
+        --env=$ENVIRONMENT \
+        --format=json \
+        --ci \
+        $FAIL_FLAG > security-${ENVIRONMENT}.json
+      
+      # Parse and display results
+      if command -v jq >/dev/null 2>&1; then
+        STATUS=$(jq -r '.status' security-${ENVIRONMENT}.json)
+        TOTAL=$(jq -r '.summary.total' security-${ENVIRONMENT}.json)
+        PASSED=$(jq -r '.summary.passed' security-${ENVIRONMENT}.json)
+        FAILED=$(jq -r '.summary.failed' security-${ENVIRONMENT}.json)
+        
+        echo "Environment: $ENVIRONMENT"
+        echo "Status: $STATUS"
+        echo "Total: $TOTAL | Passed: $PASSED | Failed: $FAILED"
+        
+        if [ "$FAILED" -gt 0 ]; then
+          echo "Issues found:"
+          jq -r '.results[] | select(.status == "failed") | "  - " + .rule + ": " + .message' security-${ENVIRONMENT}.json
+        fi
+      fi
+  artifacts:
+    when: always
+    paths:
+      - security-*.json
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+
+# Security report generation
+security_report:
+  stage: security
+  image: php:${PHP_VERSION}-cli
+  dependencies:
+    - security_multi_env
+  script:
+    - |
+      echo "📊 Generating comprehensive security report"
+      
+      # Create summary report
+      echo "# Security Audit Summary" > security-summary.md
+      echo "" >> security-summary.md
+      echo "| Environment | Status | Total | Passed | Failed |" >> security-summary.md
+      echo "|-------------|--------|-------|--------|--------|" >> security-summary.md
+      
+      for env in local staging production; do
+        if [ -f "security-${env}.json" ] && command -v jq >/dev/null 2>&1; then
+          STATUS=$(jq -r '.status' security-${env}.json)
+          TOTAL=$(jq -r '.summary.total' security-${env}.json)
+          PASSED=$(jq -r '.summary.passed' security-${env}.json)
+          FAILED=$(jq -r '.summary.failed' security-${env}.json)
+          
+          if [ "$STATUS" = "passed" ]; then
+            ICON="✅"
+          else
+            ICON="❌"
+          fi
+          
+          echo "| ${env} | ${ICON} ${STATUS} | ${TOTAL} | ${PASSED} | ${FAILED} |" >> security-summary.md
+        fi
+      done
+      
+      echo "" >> security-summary.md
+      echo "Generated on: $(date)" >> security-summary.md
+      
+      # Display summary
+      cat security-summary.md
+  artifacts:
+    when: always
+    paths:
+      - security-summary.md
+      - security-*.json
+    expire_in: 1 month
+  only:
+    - main
+
+# Deploy with security validation
+deploy_staging:
+  stage: deploy
+  image: php:${PHP_VERSION}-cli
+  dependencies:
+    - security_staging
+  script:
+    - |
+      echo "🚀 Deploying to staging with security validation"
+      
+      # Check if security audit passed
+      if [ -f "security-staging.json" ] && command -v jq >/dev/null 2>&1; then
+        STATUS=$(jq -r '.status' security-staging.json)
+        if [ "$STATUS" = "failed" ]; then
+          echo "❌ Cannot deploy to staging: Security audit failed"
+          exit 1
+        fi
+      fi
+      
+      echo "✅ Security audit passed. Proceeding with deployment..."
+      # Add your staging deployment commands here
+      # rsync, kubectl, docker push, etc.
+  environment:
+    name: staging
+    url: https://staging.example.com
+  only:
+    - develop
+
+deploy_production:
+  stage: deploy
+  image: php:${PHP_VERSION}-cli
+  dependencies:
+    - security_production
+  script:
+    - |
+      echo "🚀 Deploying to production with security validation"
+      
+      # Check if security audit passed
+      if [ -f "security-production.json" ] && command -v jq >/dev/null 2>&1; then
+        STATUS=$(jq -r '.status' security-production.json)
+        if [ "$STATUS" = "failed" ]; then
+          echo "❌ Cannot deploy to production: Security audit failed"
+          exit 1
+        fi
+      fi
+      
+      echo "✅ Security audit passed. Proceeding with production deployment..."
+      # Add your production deployment commands here
+      # rsync, kubectl, docker push, etc.
+  environment:
+    name: production
+    url: https://example.com
+  when: manual  # Require manual approval for production
+  only:
+    - main
+
+# Scheduled security audit
+scheduled_security_audit:
+  stage: security
+  image: php:${PHP_VERSION}-cli
+  script:
+    - |
+      echo "📅 Running scheduled security audit"
+      
+      # Run audit for all environments
+      for env in staging production; do
+        echo "Checking $env environment..."
+        php artisan safeguard:check \
+          --env=$env \
+          --format=json \
+          --ci > security-scheduled-${env}.json
+        
+        if command -v jq >/dev/null 2>&1; then
+          STATUS=$(jq -r '.status' security-scheduled-${env}.json)
+          FAILED=$(jq -r '.summary.failed' security-scheduled-${env}.json)
+          
+          if [ "$STATUS" = "failed" ]; then
+            echo "⚠️ Security issues found in $env:"
+            jq -r '.results[] | select(.status == "failed") | "  - " + .rule + ": " + .message' security-scheduled-${env}.json
+          else
+            echo "✅ $env environment is secure"
+          fi
+        fi
+      done
+      
+      # Send notification if issues found
+      # Add your notification logic here (Slack, email, etc.)
+  artifacts:
+    when: always
+    paths:
+      - security-scheduled-*.json
+    expire_in: 1 week
+  only:
+    - schedules
+
+# Security rule testing
+test_security_rules:
+  stage: test
+  image: php:${PHP_VERSION}-cli
+  script:
+    - |
+      echo "🧪 Testing individual security rules"
+      
+      # Get list of enabled rules
+      RULES=$(php artisan safeguard:list --enabled --format=json | jq -r '.[].id' | head -5)
+      
+      for rule in $RULES; do
+        echo "Testing rule: $rule"
+        if php artisan safeguard:test-rule "$rule" --format=json > "test-${rule}.json"; then
+          echo "✅ Rule $rule passed"
+        else
+          echo "❌ Rule $rule failed"
+        fi
+      done
+  artifacts:
+    when: always
+    paths:
+      - test-*.json
+    expire_in: 1 day
+  only:
+    - merge_requests
+
+# Custom security check with Docker
+security_docker:
+  stage: security
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - |
+      echo "🐳 Running security audit in Docker container"
+      
+      # Build security check image
+      cat > Dockerfile.security <<EOF
+      FROM php:${PHP_VERSION}-cli
+      WORKDIR /app
+      COPY composer.* ./
+      RUN apt-get update && apt-get install -y git zip unzip && \
+          curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+          composer install --no-dev --optimize-autoloader
+      COPY . .
+      RUN cp .env.example .env && php artisan key:generate
+      CMD ["php", "artisan", "safeguard:check", "--env=production", "--format=json", "--ci"]
+      EOF
+      
+      # Build and run
+      docker build -f Dockerfile.security -t laravel-security-check .
+      docker run --rm laravel-security-check > security-docker.json
+      
+      # Parse results
+      if command -v jq >/dev/null 2>&1; then
+        STATUS=$(jq -r '.status' security-docker.json)
+        echo "Docker Security Check Status: $STATUS"
+        
+        if [ "$STATUS" = "failed" ]; then
+          echo "Issues found in Docker security check:"
+          jq -r '.results[] | select(.status == "failed") | "- " + .rule + ": " + .message' security-docker.json
+        fi
+      fi
+  artifacts:
+    when: always
+    paths:
+      - security-docker.json
+    expire_in: 1 week
+  only:
+    - main
