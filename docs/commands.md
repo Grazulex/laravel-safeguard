@@ -19,15 +19,19 @@ php artisan safeguard:check [options]
 | `--format=FORMAT` | Output format (cli, json) | `--format=json` |
 | `--fail-on-error` | Exit with error code if rules fail | `--fail-on-error` |
 | `--ci` | CI-friendly output (no colors) | `--ci` |
+| `--env-rules` | Use environment-specific rules only | `--env-rules` |
 
 ### Examples
 
 ```bash
-# Basic security check
+# Basic security check (runs all enabled rules)
 php artisan safeguard:check
 
-# Check production environment
+# Check production environment (still runs all enabled rules)
 php artisan safeguard:check --env=production
+
+# Use only environment-specific rules for production
+php artisan safeguard:check --env=production --env-rules
 
 # Get JSON output
 php artisan safeguard:check --format=json

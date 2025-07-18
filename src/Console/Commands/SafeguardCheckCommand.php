@@ -14,7 +14,8 @@ class SafeguardCheckCommand extends Command
                             {--env= : Specific environment to check rules for}
                             {--format=cli : Output format (cli, json)}
                             {--fail-on-error : Exit with error code if any rule fails}
-                            {--ci : CI-friendly output (no colors, compact)}';
+                            {--ci : CI-friendly output (no colors, compact)}
+                            {--env-rules : Use environment-specific rules only}';
 
     protected $description = 'Run Laravel Safeguard security checks';
 
@@ -23,12 +24,15 @@ class SafeguardCheckCommand extends Command
         $environment = $this->option('env') ?: app()->environment();
         $format = $this->option('format');
         $ciMode = $this->option('ci');
+        $useEnvRules = $this->option('env-rules');
 
         if (! $ciMode) {
             $this->showHeader();
         }
 
-        $results = $manager->runChecks($environment);
+        $results = $useEnvRules
+            ? $manager->runChecksForEnvironment($environment)
+            : $manager->runChecks($environment);
 
         if ($format === 'json') {
             return $this->outputJson($results);
