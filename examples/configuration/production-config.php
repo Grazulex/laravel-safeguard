@@ -47,14 +47,12 @@ return [
         // Encryption Security Rules - CRITICAL
         'encryption-key-rotation' => true,
         'sensitive-data-encryption' => true,
-        'secure_cookies_in_production' => true,
-        'https_enforced_in_production' => true,
 
-        // Custom Rules (if you have them)
-        'database-security-check' => true,
-        'api-security-check' => true,
-        'file-upload-security' => true,
-        'third-party-service-security' => true,
+        // Custom Rules (enable if you have created them)
+        // 'database-security-check' => true,
+        // 'api-security-check' => true,
+        // 'file-upload-security' => true,
+        // 'third-party-service-security' => true,
     ],
 
     /*
@@ -69,42 +67,19 @@ return [
         'production' => [
             'app-debug-false-in-production',
             'app-key-is-set',
-            'env-has-all-required-keys',
-            'no-secrets-in-code',
-            'csrf-enabled',
-            'composer-package-security',
             'env-file-permissions',
             'database-connection-encrypted',
             'database-credentials-not-default',
-            'database-backup-security',
             'password-policy-compliance',
-            'two-factor-auth-enabled',
-            'session-security-settings',
             'encryption-key-rotation',
-            'sensitive-data-encryption',
-            'https_enforced_in_production',
-            'env_file_permissions',
-            'sensitive_files_hidden',
-            'storage_writable',
-            'database_security_check',
-            'api_security_check',
-            'file_upload_security',
-            'third_party_service_security',
         ],
 
-        // Staging should mirror production
+        // Staging should mirror production basics
         'staging' => [
-            'env_debug_false_in_production',
-            'app_key_is_set',
-            'env_has_all_required_keys',
-            'no_secrets_in_code',
-            'csrf_enabled',
-            'secure_cookies_in_production',
-            'env_file_permissions',
-            'sensitive_files_hidden',
-            'storage_writable',
-            'database_security_check',
-            'api_security_check',
+            'app-debug-false-in-production',
+            'app-key-is-set',
+            'csrf-enabled',
+            'database-connection-encrypted',
         ],
     ],
 
@@ -312,27 +287,6 @@ return [
     | Custom Rules Configuration
     |--------------------------------------------------------------------------
     */
-    'custom_rules_path' => 'app/SafeguardRules', // app_path('SafeguardRules'),
+    'custom_rules_path' => app_path('SafeguardRules'),
     'custom_rules_namespace' => 'App\\SafeguardRules',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Production-Specific Settings
-    |--------------------------------------------------------------------------
-    */
-
-    // Fail fast in production - don't continue if critical issues found
-    'fail_on_critical' => true,
-
-    // Enable detailed logging for security audits
-    'log_results' => true,
-    'log_channel' => 'security',
-
-    // Performance settings for production
-    'cache_results' => true,
-    'cache_ttl' => 3600, // 1 hour
-
-    // Security reporting
-    'report_to_sentry' => env('SAFEGUARD_REPORT_TO_SENTRY', false),
-    'webhook_url' => env('SAFEGUARD_WEBHOOK_URL'),
 ];
