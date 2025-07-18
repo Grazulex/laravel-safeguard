@@ -20,6 +20,8 @@ php artisan safeguard:check [options]
 | `--fail-on-error` | Exit with error code if rules fail | `--fail-on-error` |
 | `--ci` | CI-friendly output (no colors) | `--ci` |
 | `--env-rules` | Use environment-specific rules only | `--env-rules` |
+| `--details` | Show detailed information for failed checks | `--details` |
+| `--show-all` | Show detailed information for all checks | `--show-all` |
 
 ### Examples
 
@@ -36,11 +38,20 @@ php artisan safeguard:check --env=production --env-rules
 # Get JSON output
 php artisan safeguard:check --format=json
 
+# Show detailed information for failed checks only
+php artisan safeguard:check --details
+
+# Show detailed information for all checks (passed and failed)
+php artisan safeguard:check --show-all
+
 # CI/CD usage
 php artisan safeguard:check --ci --fail-on-error
 
-# Production check with failure on errors
-php artisan safeguard:check --env=production --fail-on-error
+# Production check with failure on errors and detailed output
+php artisan safeguard:check --env=production --fail-on-error --details
+
+# Comprehensive check with full details
+php artisan safeguard:check --env=production --show-all --format=json
 ```
 
 ### Exit Codes
@@ -105,7 +116,7 @@ Generate a new custom security rule.
 
 ### Syntax
 ```bash
-php artisan safeguard:make-rule {name}
+php artisan safeguard:make-rule {name} [options]
 ```
 
 ### Arguments
@@ -114,17 +125,26 @@ php artisan safeguard:make-rule {name}
 |----------|-------------|----------|
 | `name` | Name of the rule class | Yes |
 
+### Options
+
+| Option | Description | Default | Example |
+|--------|-------------|---------|---------|
+| `--severity=LEVEL` | The severity level (info, warning, error) | `info` | `--severity=error` |
+
 ### Examples
 
 ```bash
-# Create a custom rule
+# Create a custom rule with default severity (info)
 php artisan safeguard:make-rule CustomSecurityRule
 
-# Create a database security rule
-php artisan safeguard:make-rule DatabaseSecurityRule
+# Create a rule with warning severity
+php artisan safeguard:make-rule DatabaseSecurityRule --severity=warning
 
-# Create an API security rule
-php artisan safeguard:make-rule ApiSecurityRule
+# Create a rule with error severity
+php artisan safeguard:make-rule ApiSecurityRule --severity=error
+
+# Create a critical infrastructure rule
+php artisan safeguard:make-rule InfrastructureSecurityRule --severity=error
 ```
 
 ### Generated File
@@ -164,7 +184,7 @@ class CustomSecurityRule implements SafeguardRule
 
     public function severity(): string
     {
-        return 'error';
+        return 'error'; // This will match the --severity option used during creation
     }
 }
 ```

@@ -13,7 +13,7 @@ php artisan safeguard:check
 php artisan safeguard:check --format=cli
 ```
 
-### Example Output
+### Basic Output Example
 ```
 🔐 Laravel Safeguard Security Check
 ═══════════════════════════════════════
@@ -30,11 +30,78 @@ Environment: production
 🎯 1 issue found, 4 checks passed
 ```
 
+### Detailed Output Options
+
+#### Show Details for Failed Checks Only
+```bash
+php artisan safeguard:check --details
+```
+
+**Example Output:**
+```
+🔐 Laravel Safeguard Security Check
+═══════════════════════════════════════
+
+Environment: production
+
+✅ APP_KEY is set
+❌ APP_DEBUG is true in production
+   ⚙️ Current Setting: true
+   💡 Recommendation: Set APP_DEBUG=false in production environment
+   ⚠️ Security Impact: Debug mode exposes sensitive application information
+
+✅ CSRF protection enabled
+⚠️  HTTPS not enforced (rule disabled)
+✅ Storage directories are writable
+
+═══════════════════════════════════════
+🎯 1 issue found, 4 checks passed
+```
+
+#### Show Details for All Checks
+```bash
+php artisan safeguard:check --show-all
+```
+
+**Example Output:**
+```
+🔐 Laravel Safeguard Security Check
+═══════════════════════════════════════
+
+Environment: production
+
+✅ APP_KEY is set
+   📌 Status: Application key is properly configured
+   💡 Recommendation: Rotate key periodically for enhanced security
+
+❌ APP_DEBUG is true in production
+   ⚙️ Current Setting: true
+   💡 Recommendation: Set APP_DEBUG=false in production environment
+   ⚠️ Security Impact: Debug mode exposes sensitive application information
+
+✅ CSRF protection enabled
+   📌 Status: CSRF middleware is active and properly configured
+   💡 Recommendation: Ensure all forms include CSRF tokens
+
+⚠️  HTTPS not enforced (rule disabled)
+   📌 Status: Rule is disabled in configuration
+   💡 Recommendation: Enable HTTPS enforcement for production
+
+✅ Storage directories are writable
+   📌 Status: All required directories have proper permissions
+   💡 Recommendation: Monitor disk space regularly
+
+═══════════════════════════════════════
+🎯 1 issue found, 4 checks passed
+```
+
 ### Features
 - **Colors**: Green for success, red for failures, yellow for warnings
 - **Icons**: Visual indicators for different result types
 - **Summary**: Total counts at the bottom
 - **Human-readable**: Designed for developers and manual review
+- **Detailed information**: Use `--details` or `--show-all` for additional context
+- **Actionable recommendations**: Clear guidance on how to fix issues
 
 ## JSON Format
 
@@ -45,7 +112,7 @@ Machine-readable format for programmatic usage and CI/CD integration.
 php artisan safeguard:check --format=json
 ```
 
-### Example Output
+### Basic JSON Output
 ```json
 {
   "status": "failed",
@@ -74,9 +141,70 @@ php artisan safeguard:check --format=json
       "message": "APP_DEBUG is enabled in production environment",
       "severity": "critical",
       "details": {
-        "current_env": "production",
-        "debug_value": true,
-        "recommendation": "Set APP_DEBUG=false in your .env file for production"
+        "current_setting": "true",
+        "recommendation": "Set APP_DEBUG=false in your .env file for production",
+        "security_impact": "Debug mode exposes sensitive application information"
+      }
+    }
+  ]
+}
+```
+
+### Enhanced JSON Output with All Details
+```bash
+php artisan safeguard:check --format=json --show-all
+```
+
+**Example with comprehensive details:**
+```json
+{
+  "status": "failed",
+  "environment": "production", 
+  "summary": {
+    "total": 5,
+    "passed": 4,
+    "failed": 1
+  },
+  "results": [
+    {
+      "rule": "app_key_is_set",
+      "description": "Verifies that Laravel application key is generated",
+      "status": "passed",
+      "message": "APP_KEY is properly configured",
+      "severity": "critical",
+      "details": {
+        "current_setting": "Generated",
+        "key_length": 32,
+        "key_format": "base64",
+        "recommendation": "Rotate key periodically for enhanced security",
+        "security_impact": "Strong application key provides encryption security"
+      }
+    },
+    {
+      "rule": "env_debug_false_in_production", 
+      "description": "Ensures APP_DEBUG is false in production environment",
+      "status": "failed",
+      "message": "APP_DEBUG is enabled in production environment",
+      "severity": "critical",
+      "details": {
+        "current_setting": "true",
+        "recommendation": "Set APP_DEBUG=false in your .env file for production",
+        "security_impact": "Debug mode exposes sensitive application information",
+        "file_path": ".env",
+        "expected_value": "false"
+      }
+    },
+    {
+      "rule": "csrf_enabled",
+      "description": "Ensures CSRF protection is properly configured",
+      "status": "passed", 
+      "message": "CSRF protection is active",
+      "severity": "critical",
+      "details": {
+        "current_setting": "enabled",
+        "middleware_active": true,
+        "recommendation": "Ensure all forms include CSRF tokens",
+        "security_impact": "Prevents cross-site request forgery attacks"
       }
     }
   ]
@@ -157,6 +285,36 @@ php artisan safeguard:check --ci --format=json
 
 This provides JSON output without colors or decorative elements.
 
+### Detailed Information Options
+
+#### Failed Checks Only with Details
+```bash
+php artisan safeguard:check --details
+```
+
+Shows detailed information only for checks that fail, keeping the output focused.
+
+#### Comprehensive Analysis
+```bash
+php artisan safeguard:check --show-all
+```
+
+Shows detailed information for all checks (passed and failed), providing a complete audit trail.
+
+#### Detailed JSON for Automation
+```bash
+php artisan safeguard:check --format=json --show-all
+```
+
+Combines machine-readable JSON format with comprehensive details for automated processing and reporting.
+
+#### CI Mode with Details
+```bash
+php artisan safeguard:check --ci --details
+```
+
+Provides detailed failure information in CI-friendly format (no colors, compact).
+
 ### Fail on Error
 ```bash
 php artisan safeguard:check --fail-on-error
@@ -164,35 +322,65 @@ php artisan safeguard:check --fail-on-error
 
 Exits with code 1 if any rules fail, useful for blocking deployments.
 
-### Environment-Specific with JSON
+### Environment-Specific with Details
 ```bash
-php artisan safeguard:check --env=production --format=json --fail-on-error
+php artisan safeguard:check --env=production --details --fail-on-error
 ```
+
+Runs production checks with detailed output and exits on failure.
+
+### Complete Production Audit
+```bash
+php artisan safeguard:check --env=production --show-all --format=json --fail-on-error
+```
+
+Comprehensive production security audit with full details in JSON format.
 
 ## Processing Output
 
 ### Bash Examples
 
-#### Parse JSON with jq
+#### Parse JSON with jq (Enhanced with Details)
 ```bash
 #!/bin/bash
 
-# Run security check and capture JSON
-RESULT=$(php artisan safeguard:check --format=json)
+# Run security check with full details and capture JSON
+RESULT=$(php artisan safeguard:check --format=json --show-all)
 
-# Extract status
+# Extract status and summary
 STATUS=$(echo "$RESULT" | jq -r '.status')
 FAILED_COUNT=$(echo "$RESULT" | jq -r '.summary.failed')
+TOTAL_COUNT=$(echo "$RESULT" | jq -r '.summary.total')
+
+echo "🔐 Security Audit Results"
+echo "========================="
+echo "Status: $STATUS"
+echo "Total Checks: $TOTAL_COUNT"
+echo "Failed: $FAILED_COUNT"
+echo ""
 
 if [ "$STATUS" = "failed" ]; then
-    echo "❌ Security check failed: $FAILED_COUNT issues found"
+    echo "❌ Security issues found:"
+    echo ""
     
-    # Extract failed rules
-    echo "$RESULT" | jq -r '.results[] | select(.status == "failed") | "- " + .rule + ": " + .message'
+    # Extract failed rules with detailed information
+    echo "$RESULT" | jq -r '.results[] | select(.status == "failed") | 
+        "🚨 " + .rule + "\n" +
+        "   Message: " + .message + "\n" +
+        "   Severity: " + .severity + "\n" +
+        (if .details.current_setting then "   Current: " + .details.current_setting + "\n" else "" end) +
+        (if .details.recommendation then "   💡 Fix: " + .details.recommendation + "\n" else "" end) +
+        (if .details.security_impact then "   ⚠️  Impact: " + .details.security_impact + "\n" else "" end) +
+        ""'
     
     exit 1
 else
-    echo "✅ All security checks passed"
+    echo "✅ All security checks passed!"
+    
+    # Show summary of passed checks
+    echo ""
+    echo "📋 Passed Checks:"
+    echo "$RESULT" | jq -r '.results[] | select(.status == "passed") | "  ✓ " + .rule + ": " + .message'
 fi
 ```
 

@@ -41,6 +41,7 @@ security_staging:
       php artisan safeguard:check \
         --env=staging \
         --format=json \
+        --show-all \
         --ci > security-staging.json
       
       # Parse results
@@ -77,6 +78,7 @@ security_production:
       php artisan safeguard:check \
         --env=production \
         --format=json \
+        --show-all \
         --ci \
         --fail-on-error > security-production.json
       
@@ -129,6 +131,7 @@ security_multi_env:
       php artisan safeguard:check \
         --env=$ENVIRONMENT \
         --format=json \
+        --show-all \
         --ci \
         $FAIL_FLAG > security-${ENVIRONMENT}.json
       

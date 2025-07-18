@@ -49,7 +49,7 @@ jobs:
         php artisan key:generate
         
     - name: Run security checks
-      run: php artisan safeguard:check --ci --fail-on-error
+      run: php artisan safeguard:check --ci --details --fail-on-error
 ```
 
 ### Advanced Security Workflow
@@ -92,6 +92,7 @@ jobs:
         php artisan safeguard:check \
           --env=${{ matrix.environment }} \
           --format=json \
+          --show-all \
           --fail-on-error > security-report-${{ matrix.environment }}.json
           
     - name: Upload security report

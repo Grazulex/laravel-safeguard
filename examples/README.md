@@ -9,9 +9,11 @@ examples/
 ├── README.md                          # This file
 ├── basic-usage/                       # Basic usage examples
 │   ├── simple-check.php
+│   ├── detailed-output.php
 │   ├── environment-specific.php
 │   └── json-output.php
 ├── custom-rules/                      # Custom security rule examples
+│   ├── make-rule-example.php
 │   ├── DatabaseSecurityRule.php
 │   ├── ApiSecurityRule.php
 │   ├── FileUploadSecurityRule.php
@@ -63,12 +65,14 @@ cp security.yml ../../.github/workflows/
 Learn the fundamentals of Laravel Safeguard with simple, practical examples.
 
 - **Simple Check**: Basic security audit
+- **Detailed Output**: Using --details and --show-all options for comprehensive information
 - **Environment-Specific**: Running checks for different environments
 - **JSON Output**: Programmatic usage with JSON output
 
 ### 2. Custom Rules
 Real-world examples of custom security rules for specific use cases.
 
+- **Make Rule Example**: Complete guide to creating custom rules with different severity levels
 - **Database Security**: Validate database configuration and credentials
 - **API Security**: Check API routes and authentication
 - **File Upload Security**: Validate file upload configurations

@@ -142,6 +142,20 @@ Run checks for a specific environment:
 php artisan safeguard:check --env=production
 ```
 
+### Detailed Output
+
+Show additional information for failed checks:
+
+```bash
+php artisan safeguard:check --details
+```
+
+Show detailed information for all checks:
+
+```bash
+php artisan safeguard:check --show-all
+```
+
 ### List Available Rules
 
 See all available rules and their status:
@@ -171,7 +185,15 @@ Generate a new custom security rule:
 php artisan safeguard:make-rule CustomSecurityRule
 ```
 
+With specific severity level:
+
+```bash
+php artisan safeguard:make-rule CriticalSecurityRule --severity=error
+```
+
 ## 🔎 Example Output
+
+### Basic Output
 
 ```
 🔐 Laravel Safeguard Security Check
@@ -187,6 +209,39 @@ Environment: production
 ✅ Database connection uses encryption
 ✅ Password policy meets security standards
 ⚠️  Two-factor authentication not configured
+
+═══════════════════════════════════════
+🎯 2 critical issues, 1 warning found
+```
+
+### Detailed Output (with --details flag)
+
+```
+🔐 Laravel Safeguard Security Check
+═══════════════════════════════════════
+
+Environment: production
+
+✅ APP_KEY is set
+✅ All required environment variables present  
+❌ APP_DEBUG is true in production
+   ⚙️ Current Setting: true
+   💡 Recommendation: Set APP_DEBUG=false in production environment
+   ⚠️ Security Impact: Debug mode exposes sensitive application information
+
+❌ Hardcoded secret found in config/services.php
+   📁 File Path: config/services.php
+   📋 Detected Secrets:
+     • STRIPE_SECRET on line 15
+     • API_TOKEN on line 23
+   💡 Recommendation: Move secrets to environment variables
+
+✅ CSRF protection enabled
+✅ Database connection uses encryption
+✅ Password policy meets security standards
+⚠️  Two-factor authentication not configured
+   📌 Current Status: Not configured
+   💡 Recommendation: Enable 2FA for enhanced security
 
 ═══════════════════════════════════════
 🎯 2 critical issues, 1 warning found
