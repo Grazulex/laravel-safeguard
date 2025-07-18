@@ -88,13 +88,13 @@ Edit `config/safeguard.php` to customize your security rules:
 return [
     'rules' => [
         // Essential security rules (recommended to keep enabled)
-        'app_key_is_set' => true,
-        'env_debug_false_in_production' => true,
-        'csrf_enabled' => true,
+        'app-key-is-set' => true,
+        'app-debug-false-in-production' => true,
+        'csrf-enabled' => true,
         
         // Optional rules (enable based on your needs)
-        'no_secrets_in_code' => true,
-        'https_enforced_in_production' => false,
+        'no-secrets-in-code' => true,
+        'env-file-permissions' => true,
     ],
 ];
 ```
@@ -214,7 +214,7 @@ Check your `config/safeguard.php` file has rules set to `true`:
 
 ```php
 'rules' => [
-    'app_key_is_set' => true, // ← Make sure this is true
+    'app-key-is-set' => true, // ← Make sure this is true
     // ...
 ],
 ```

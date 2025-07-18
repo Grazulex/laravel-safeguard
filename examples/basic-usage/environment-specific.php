@@ -11,8 +11,19 @@ declare(strict_types=1);
 echo "🔐 Laravel Safeguard - Environment-Specific Checks\n";
 echo "==================================================\n\n";
 
-echo "Different environments require different security rules.\n";
-echo "Laravel Safeguard supports environment-specific configurations.\n\n";
+echo "## Usage Modes\n\n";
+
+echo "1. **All Enabled Rules** (default):\n";
+echo "   php artisan safeguard:check --env=production\n";
+echo "   Runs all enabled rules but provides environment context\n\n";
+
+echo "2. **Environment-Specific Rules Only**:\n";
+echo "   php artisan safeguard:check --env=production --env-rules\n";
+echo "   Runs only rules configured for the specific environment\n\n";
+
+echo "## Environment Configuration\n\n";
+
+echo "Different environments require different security priorities:\n\n";
 
 // Example commands for different environments
 $environments = [

@@ -2,10 +2,6 @@
 
 Laravel Safeguard includes comprehensive security rules organized by category. Each rule can be enabled/disabled in your configuration.
 
-# Security Rules Reference
-
-Laravel Safeguard includes comprehensive security rules organized by category. Each rule can be enabled/disabled in your configuration.
-
 ## Environment & Configuration Rules
 
 ### `app-debug-false-in-production`
@@ -281,16 +277,19 @@ Rules can be configured to run only in specific environments:
 ],
 ```
 
-## Testing Specific Rules
+## Checking Individual Rules
 
-Test individual rules in isolation:
+You can check individual rules by using the rule list and filters:
 
 ```bash
-# Test a specific rule
-php artisan safeguard:test-rule env_debug_false_in_production
+# List rules by severity to focus on critical ones
+php artisan safeguard:list --severity=critical
 
-# Test multiple rules
-php artisan safeguard:test-rule app_key_is_set csrf_enabled
+# Run only rules for a specific environment
+php artisan safeguard:check --env=production --env-rules
+
+# Get detailed information about specific rule failures
+php artisan safeguard:check --details
 ```
 
 ## Custom Rule Categories
