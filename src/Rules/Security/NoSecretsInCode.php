@@ -28,6 +28,11 @@ class NoSecretsInCode implements SafeguardRule
         $foundSecrets = [];
 
         foreach ($scanPaths as $path) {
+            // Skip directories that don't exist
+            if (! is_dir($path)) {
+                continue;
+            }
+
             $files = File::allFiles($path);
 
             foreach ($files as $file) {
