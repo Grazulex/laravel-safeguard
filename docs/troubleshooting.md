@@ -582,14 +582,89 @@ php artisan config:show safeguard
 php artisan safeguard:list
 ```
 
+## Detailed Output Issues
+
+### No Detailed Information Shown
+
+**Problem**: Using `--details` or `--show-all` but not seeing additional information
+
+**Possible Causes**:
+1. Rules don't provide detailed information
+2. Output is being truncated
+3. Using incompatible options
+
+**Solutions**:
+```bash
+# Verify the options are working
+php artisan safeguard:check --show-all | head -50
+
+# Check specific rule details
+php artisan safeguard:check --details --format=json | jq '.results[0].details'
+
+# Ensure you're not using --ci which may suppress details
+php artisan safeguard:check --details --format=cli
+```
+
+### Detailed Output Too Verbose
+
+**Problem**: `--show-all` produces too much output
+
+**Solutions**:
+```bash
+# Use --details to show only failed check details
+php artisan safeguard:check --details
+
+# Use JSON format for programmatic processing
+php artisan safeguard:check --show-all --format=json
+
+# Pipe to less for pagination
+php artisan safeguard:check --show-all | less
+
+# Save to file for review
+php artisan safeguard:check --show-all > security-audit.txt
+```
+
+### Details Not Helpful
+
+**Problem**: Detailed information doesn't provide actionable guidance
+
+**Solution**: 
+The quality of details depends on rule implementation. Core rules provide:
+- Current settings
+- Recommendations  
+- Security impact
+- File paths where relevant
+
+```bash
+# Check which rules provide the most helpful details
+php artisan safeguard:check --show-all --format=json | jq '.results[] | select(.details.recommendation != null) | .rule'
+```
+
+### Performance Issues with Detailed Output
+
+**Problem**: Commands with `--show-all` run slowly
+
+**Solutions**:
+```bash
+# Use --details instead (only failed checks)
+php artisan safeguard:check --details
+
+# Run without details for quick checks
+php artisan safeguard:check
+
+# Use specific environment rules only
+php artisan safeguard:check --env=production --env-rules --details
+```
+
 ## Getting Help
 
 If you can't resolve an issue:
 
 1. **Check documentation**: Review relevant docs sections
 2. **Search issues**: Look for similar issues on GitHub
-3. **Create minimal reproduction**: Isolate the problem
-4. **Report bug**: Include debug information above
+3. **Enable detailed output**: Use `--details` or `--show-all` for more context
+4. **Create minimal reproduction**: Isolate the problem
+5. **Report bug**: Include debug information above
 
 ### Creating a Minimal Reproduction
 
@@ -601,8 +676,11 @@ cd safeguard-debug
 # Install Safeguard
 composer require --dev grazulex/laravel-safeguard
 
-# Reproduce the issue
-php artisan safeguard:check
+# Reproduce the issue with details
+php artisan safeguard:check --details
+
+# If the issue involves specific rules, show rule status
+php artisan safeguard:list
 
 # Share the exact steps and output
 ```

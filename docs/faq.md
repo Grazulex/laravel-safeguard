@@ -120,6 +120,44 @@ For specific environments:
 php artisan safeguard:check --env=production
 ```
 
+For detailed information about failures:
+```bash
+php artisan safeguard:check --details
+```
+
+For comprehensive audit with all details:
+```bash
+php artisan safeguard:check --show-all
+```
+
+### What's the difference between --details and --show-all?
+
+- `--details`: Shows additional information only for **failed** checks (recommendations, current settings, security impact)
+- `--show-all`: Shows additional information for **all** checks (both passed and failed)
+
+Use `--details` when troubleshooting specific issues, and `--show-all` for comprehensive security audits.
+
+### How do I get more information about failures?
+
+Laravel Safeguard provides detailed information to help you fix issues:
+
+```bash
+# Basic check (minimal output)
+php artisan safeguard:check
+
+# Detailed failure analysis
+php artisan safeguard:check --details
+
+# Complete audit trail
+php artisan safeguard:check --show-all
+```
+
+The detailed output includes:
+- Current settings
+- Actionable recommendations  
+- Security impact explanations
+- File paths where relevant
+
 ### What do the different icons mean?
 
 - ✅ **Green checkmark**: Rule passed
@@ -135,6 +173,11 @@ Use the `--format=json` option:
 php artisan safeguard:check --format=json
 ```
 
+For comprehensive JSON with all details:
+```bash
+php artisan safeguard:check --format=json --show-all
+```
+
 This is useful for CI/CD integration and programmatic usage.
 
 ### Can I fail CI/CD pipelines on security issues?
@@ -143,6 +186,11 @@ Yes, use the `--fail-on-error` option:
 
 ```bash
 php artisan safeguard:check --fail-on-error
+```
+
+For detailed CI output:
+```bash
+php artisan safeguard:check --ci --details --fail-on-error
 ```
 
 This will exit with code 1 if any rules fail, causing CI/CD pipelines to fail.
@@ -156,6 +204,18 @@ Generate a new rule:
 ```bash
 php artisan safeguard:make-rule MyCustomRule
 ```
+
+With specific severity level:
+
+```bash
+# Create rule with warning severity
+php artisan safeguard:make-rule DatabaseSecurityRule --severity=warning
+
+# Create rule with error severity  
+php artisan safeguard:make-rule CriticalSecurityRule --severity=error
+```
+
+Available severity levels: `info` (default), `warning`, `error`
 
 Then implement your logic in the generated file.
 
