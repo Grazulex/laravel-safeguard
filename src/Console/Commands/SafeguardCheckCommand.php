@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Console\Commands;
 
+use Grazulex\LaravelSafeguard\SafeguardResult;
 use Grazulex\LaravelSafeguard\Services\SafeguardManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -15,9 +16,11 @@ class SafeguardCheckCommand extends Command
                             {--format=cli : Output format (cli, json)}
                             {--fail-on-error : Exit with error code if any rule fails}
                             {--ci : CI-friendly output (no colors, compact)}
-                            {--env-rules : Use environment-specific rules only}';
+                            {--env-rules : Use environment-specific rules only}
+                            {--details : Show detailed information for failed checks}
+                            {--show-all : Show detailed information for all checks}';
 
-    protected $description = 'Run Laravel Safeguard security checks';
+    protected $description = 'Run Laravel Safeguard security checks. Use --details to show additional information for failed checks.';
 
     public function handle(SafeguardManager $manager): int
     {
@@ -56,6 +59,8 @@ class SafeguardCheckCommand extends Command
         $passed = 0;
         $failed = 0;
         $warnings = 0;
+        $showDetails = $this->option('details');
+        $showAll = $this->option('show-all');
 
         foreach ($results as $check) {
             $result = $check['result'];
@@ -63,6 +68,11 @@ class SafeguardCheckCommand extends Command
 
             if (! $ciMode) {
                 $this->line($icon.' '.$result->message());
+
+                // Show details if requested
+                if (($showDetails && ! $result->passed()) || $showAll) {
+                    $this->showResultDetails($result);
+                }
             } else {
                 $status = $result->passed() ? 'PASS' : 'FAIL';
                 $this->line("[{$status}] {$check['rule']}: {$result->message()}");
@@ -143,5 +153,58 @@ class SafeguardCheckCommand extends Command
             $issues = $failed + $warnings;
             $this->comment("🎯 {$issues} issues found, {$passed} checks passed");
         }
+    }
+
+    private function showResultDetails(SafeguardResult $result): void
+    {
+        $details = $result->details();
+
+        if ($details === []) {
+            return;
+        }
+
+        // Format special keys with better labels
+        $formatMap = [
+            'current_setting' => 'Current Setting',
+            'recommendation' => 'Recommendation',
+            'security_impact' => 'Security Impact',
+            'issues' => 'Issues Found',
+            'recommendations' => 'Recommendations',
+            'vulnerable_packages' => 'Vulnerable Packages',
+            'outdated_packages' => 'Outdated Packages',
+            'abandoned_packages' => 'Abandoned Packages',
+            'file_path' => 'File Path',
+            'current_permissions' => 'Current Permissions',
+            'recommended_permissions' => 'Recommended Permissions',
+            'detected_secrets' => 'Detected Secrets',
+            'csrf_status' => 'CSRF Status',
+            'packages_analyzed' => 'Packages Analyzed',
+        ];
+
+        foreach ($details as $key => $value) {
+            $label = $formatMap[$key] ?? ucwords(str_replace('_', ' ', $key));
+
+            if (is_array($value)) {
+                $this->comment("   📋 {$label}:");
+                foreach ($value as $item) {
+                    if (is_array($item)) {
+                        $this->line('     • '.json_encode($item));
+                    } else {
+                        $this->line("     • {$item}");
+                    }
+                }
+            } else {
+                $icon = match ($key) {
+                    'recommendation' => '💡',
+                    'security_impact' => '⚠️',
+                    'current_setting' => '⚙️',
+                    'file_path' => '📁',
+                    default => '📌'
+                };
+                $this->comment("   {$icon} {$label}: {$value}");
+            }
+        }
+
+        $this->line('');
     }
 }
