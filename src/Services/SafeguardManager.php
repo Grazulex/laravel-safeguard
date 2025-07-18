@@ -115,9 +115,25 @@ class SafeguardManager
      */
     public function runChecks(?string $environment = null): Collection
     {
-        $rulesToRun = $environment !== null && $environment !== '' && $environment !== '0'
-            ? $this->getRulesForEnvironment($environment)
-            : $this->getEnabledRules();
+        // Always use enabled rules unless explicitly requested environment filtering
+        $rulesToRun = $this->getEnabledRules();
+
+        return $rulesToRun->map(function (SafeguardRule $rule): array {
+            return [
+                'rule' => $rule->id(),
+                'description' => $rule->description(),
+                'severity' => $rule->severity(),
+                'result' => $rule->check(),
+            ];
+        });
+    }
+
+    /**
+     * Run rules specific to an environment.
+     */
+    public function runChecksForEnvironment(string $environment): Collection
+    {
+        $rulesToRun = $this->getRulesForEnvironment($environment);
 
         return $rulesToRun->map(function (SafeguardRule $rule): array {
             return [

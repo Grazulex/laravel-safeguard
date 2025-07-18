@@ -68,7 +68,11 @@ return [
     | Environment-Specific Rules
     |--------------------------------------------------------------------------
     |
-    | Define which rules should run for specific environments.
+    | Define which rules should run for specific environments when using
+    | the --env-rules option with safeguard:check.
+    |
+    | By default, safeguard:check runs all enabled rules regardless of
+    | environment. Use --env-rules to limit to environment-specific rules.
     |
     */
     'environments' => [

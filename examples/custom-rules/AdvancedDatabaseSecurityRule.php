@@ -13,7 +13,6 @@ namespace App\SafeguardRules;
 
 use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
-use Illuminate\Support\Facades\DB;
 use PDO;
 
 class AdvancedDatabaseSecurityRule implements SafeguardRule
@@ -40,7 +39,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
      */
     private array $secureSslModes = [
         'require',
-        'verify-ca', 
+        'verify-ca',
         'verify-full',
     ];
 
@@ -72,8 +71,8 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
 
         foreach ($connections as $name => $config) {
             $connectionIssues = $this->validateConnection($name, $config);
-            
-            if (!empty($connectionIssues['issues'])) {
+
+            if (! empty($connectionIssues['issues'])) {
                 $issues = array_merge($issues, $connectionIssues['issues']);
                 $recommendations = array_merge($recommendations, $connectionIssues['recommendations']);
                 $securityScore -= $connectionIssues['score_penalty'];
@@ -82,7 +81,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
 
         // Additional environment-specific checks
         $envIssues = $this->validateEnvironmentSpecificSecurity();
-        if (!empty($envIssues['issues'])) {
+        if (! empty($envIssues['issues'])) {
             $issues = array_merge($issues, $envIssues['issues']);
             $recommendations = array_merge($recommendations, $envIssues['recommendations']);
             $securityScore -= $envIssues['score_penalty'];
@@ -101,7 +100,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
         }
 
         $severity = $this->determineSeverity($issues, $securityScore);
-        
+
         return SafeguardResult::fail(
             sprintf('Found %d database security issues', count($issues)),
             $severity,
@@ -114,6 +113,17 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
         );
     }
 
+    public function appliesToEnvironment(string $environment): bool
+    {
+        // Apply to all environments, but with different severity
+        return true;
+    }
+
+    public function severity(): string
+    {
+        return 'critical';
+    }
+
     /**
      * Validate individual database connection
      */
@@ -124,13 +134,13 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
         $scorePenalty = 0;
 
         // Skip non-database connections (like redis, etc.)
-        if (!in_array($config['driver'] ?? '', ['mysql', 'pgsql', 'sqlsrv', 'sqlite'])) {
+        if (! in_array($config['driver'] ?? '', ['mysql', 'pgsql', 'sqlsrv', 'sqlite'])) {
             return ['issues' => [], 'recommendations' => [], 'score_penalty' => 0];
         }
 
         // 1. Password strength check
         $password = $config['password'] ?? '';
-        if (in_array(strtolower($password), array_map('strtolower', $this->weakPasswords))) {
+        if (in_array(mb_strtolower($password), array_map('strtolower', $this->weakPasswords))) {
             $issues[] = "Connection '{$name}' uses a weak or default password";
             $recommendations[] = "Use a strong, unique password for connection '{$name}'";
             $scorePenalty += 25;
@@ -183,19 +193,19 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
 
         // Check if SSL is enabled
         $sslMode = $config['sslmode'] ?? $config['options'][PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] ?? null;
-        
+
         if (empty($sslMode) || $sslMode === false) {
             $issues[] = "Connection '{$name}' does not have SSL/TLS enabled";
             $recommendations[] = "Enable SSL/TLS encryption for connection '{$name}'";
             $scorePenalty += 30;
-        } elseif (!in_array($sslMode, $this->secureSslModes)) {
+        } elseif (! in_array($sslMode, $this->secureSslModes)) {
             $issues[] = "Connection '{$name}' has weak SSL configuration";
             $recommendations[] = "Use a secure SSL mode (require, verify-ca, or verify-full) for connection '{$name}'";
             $scorePenalty += 20;
         }
 
         // Check for SSL certificate validation
-        if (isset($config['options'][PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT]) && 
+        if (isset($config['options'][PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT]) &&
             $config['options'][PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] === false) {
             $issues[] = "Connection '{$name}' has SSL certificate verification disabled";
             $recommendations[] = "Enable SSL certificate verification for connection '{$name}'";
@@ -230,7 +240,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
             }
 
             // Check for query logging in production
-            if (config('database.connections.' . config('database.default') . '.log_queries', false)) {
+            if (config('database.connections.'.config('database.default').'.log_queries', false)) {
                 $issues[] = 'Database query logging is enabled in production';
                 $recommendations[] = 'Disable query logging in production to prevent performance issues and log bloat';
                 $scorePenalty += 10;
@@ -238,7 +248,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
         }
 
         // Check for database connection pooling
-        if ($this->shouldUseConnectionPooling() && !$this->hasConnectionPooling()) {
+        if ($this->shouldUseConnectionPooling() && ! $this->hasConnectionPooling()) {
             $issues[] = 'Database connection pooling is not configured';
             $recommendations[] = 'Consider implementing connection pooling for better performance and security';
             $scorePenalty += 5;
@@ -257,7 +267,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
     private function shouldRequireSSL(string $connectionName): bool
     {
         $environment = app()->environment();
-        
+
         // Always require SSL in production
         if ($environment === 'production') {
             return true;
@@ -266,8 +276,8 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
         // Require SSL for non-local connections
         $config = config("database.connections.{$connectionName}");
         $host = $config['host'] ?? 'localhost';
-        
-        return !in_array($host, ['localhost', '127.0.0.1', '::1']);
+
+        return ! in_array($host, ['localhost', '127.0.0.1', '::1']);
     }
 
     /**
@@ -284,7 +294,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
         $driver = $config['driver'] ?? '';
         $port = $config['port'] ?? null;
 
-        return isset($defaultPorts[$driver]) && $port == $defaultPorts[$driver];
+        return isset($defaultPorts[$driver]) && $port === $defaultPorts[$driver];
     }
 
     /**
@@ -293,8 +303,8 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
     private function hasWeakUsername(array $config): bool
     {
         $weakUsernames = ['root', 'admin', 'administrator', 'user', 'postgres', 'sa'];
-        $username = strtolower($config['username'] ?? '');
-        
+        $username = mb_strtolower($config['username'] ?? '');
+
         return in_array($username, $weakUsernames);
     }
 
@@ -304,7 +314,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
     private function hasInsecureHost(array $config): bool
     {
         $host = $config['host'] ?? '';
-        
+
         // Check for wildcards or overly permissive hosts
         return in_array($host, ['%', '*', '0.0.0.0', '::']);
     }
@@ -315,14 +325,14 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
     private function countSslEnabledConnections(array $connections): int
     {
         $sslEnabled = 0;
-        
+
         foreach ($connections as $config) {
             $sslMode = $config['sslmode'] ?? $config['options'][PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] ?? null;
-            if (!empty($sslMode) && $sslMode !== false) {
+            if (! empty($sslMode) && $sslMode !== false) {
                 $sslEnabled++;
             }
         }
-        
+
         return $sslEnabled;
     }
 
@@ -331,8 +341,8 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
      */
     private function shouldUseConnectionPooling(): bool
     {
-        return app()->environment('production') && 
-               config('database.connections.' . config('database.default') . '.driver') !== 'sqlite';
+        return app()->environment('production') &&
+               config('database.connections.'.config('database.default').'.driver') !== 'sqlite';
     }
 
     /**
@@ -359,7 +369,7 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
         $criticalKeywords = ['weak password', 'no ssl', 'production'];
         foreach ($issues as $issue) {
             foreach ($criticalKeywords as $keyword) {
-                if (str_contains(strtolower($issue), $keyword)) {
+                if (str_contains(mb_strtolower($issue), $keyword)) {
                     return 'critical';
                 }
             }
@@ -372,39 +382,28 @@ class AdvancedDatabaseSecurityRule implements SafeguardRule
 
         return 'error';
     }
-
-    public function appliesToEnvironment(string $environment): bool
-    {
-        // Apply to all environments, but with different severity
-        return true;
-    }
-
-    public function severity(): string
-    {
-        return 'critical';
-    }
 }
 
 /*
  * Usage Example:
- * 
+ *
  * 1. Save this file as app/SafeguardRules/AdvancedDatabaseSecurityRule.php
- * 
+ *
  * 2. Add to your safeguard configuration:
  *    'rules' => [
  *        'advanced-database-security' => true,
  *    ],
- * 
+ *
  * 3. Add to environment configuration:
  *    'environments' => [
  *        'production' => [
  *            'advanced-database-security',
  *        ],
  *    ],
- * 
+ *
  * 4. Run the check:
  *    php artisan safeguard:check
- * 
+ *
  * This rule will validate:
  * - Password strength
  * - SSL/TLS configuration
