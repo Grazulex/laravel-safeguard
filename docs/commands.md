@@ -59,7 +59,9 @@ php artisan safeguard:list [options]
 |--------|-------------|---------|
 | `--enabled` | Show only enabled rules | `--enabled` |
 | `--disabled` | Show only disabled rules | `--disabled` |
-| `--format=FORMAT` | Output format (table, json) | `--format=json` |
+| `--environment=ENVIRONMENT` | Show rules for specific environment | `--environment=production` |
+| `--env=ENVIRONMENT` | Show rules for specific environment (alias) | `--env=production` |
+| `--severity=SEVERITY` | Show rules with specific severity | `--severity=critical` |
 
 ### Examples
 
@@ -70,8 +72,11 @@ php artisan safeguard:list
 # List only enabled rules
 php artisan safeguard:list --enabled
 
-# List rules in JSON format
-php artisan safeguard:list --format=json
+# List rules for specific environment
+php artisan safeguard:list --environment=production
+
+# List rules by severity
+php artisan safeguard:list --severity=critical
 ```
 
 ### Sample Output
@@ -80,11 +85,13 @@ php artisan safeguard:list --format=json
 ┌──────────────────────────────────┬─────────┬─────────────┬─────────────────────────────────────────┐
 │ Rule ID                          │ Status  │ Severity    │ Description                             │
 ├──────────────────────────────────┼─────────┼─────────────┼─────────────────────────────────────────┤
-│ app_key_is_set                   │ ✅ On   │ critical    │ Verifies that Laravel application...   │
-│ env_debug_false_in_production    │ ✅ On   │ critical    │ Ensures APP_DEBUG is false in...       │
-│ csrf_enabled                     │ ✅ On   │ critical    │ Ensures CSRF protection is enabled     │
-│ no_secrets_in_code               │ ✅ On   │ critical    │ Detects hardcoded secrets in...        │
-│ https_enforced_in_production     │ ❌ Off  │ warning     │ Verifies HTTPS enforcement in...        │
+│ app-key-is-set                   │ ✅ On   │ critical    │ Verifies that Laravel application...   │
+│ app-debug-false-in-production    │ ✅ On   │ critical    │ Ensures APP_DEBUG is false in...       │
+│ csrf-enabled                     │ ✅ On   │ critical    │ Ensures CSRF protection is enabled     │
+│ no-secrets-in-code               │ ✅ On   │ critical    │ Detects hardcoded secrets in...        │
+│ database-connection-encrypted    │ ✅ On   │ critical    │ Verifies database connections...        │
+│ password-policy-compliance       │ ✅ On   │ critical    │ Verifies password policy meets...      │
+│ two-factor-auth-enabled          │ ❌ Off  │ warning     │ Validates two-factor auth config...     │
 └──────────────────────────────────┴─────────┴─────────────┴─────────────────────────────────────────┘
 ```
 
@@ -156,55 +163,6 @@ class CustomSecurityRule implements SafeguardRule
         return 'error';
     }
 }
-```
-
-## `safeguard:test-rule`
-
-Test a specific security rule in isolation.
-
-### Syntax
-```bash
-php artisan safeguard:test-rule {rule} [options]
-```
-
-### Arguments
-
-| Argument | Description | Required |
-|----------|-------------|----------|
-| `rule` | Rule ID to test | Yes |
-
-### Options
-
-| Option | Description | Example |
-|--------|-------------|---------|
-| `--env=ENVIRONMENT` | Environment context | `--env=production` |
-| `--format=FORMAT` | Output format (cli, json) | `--format=json` |
-
-### Examples
-
-```bash
-# Test a specific rule
-php artisan safeguard:test-rule app_key_is_set
-
-# Test rule in production context
-php artisan safeguard:test-rule env_debug_false_in_production --env=production
-
-# Test rule with JSON output
-php artisan safeguard:test-rule csrf_enabled --format=json
-```
-
-### Sample Output
-
-```
-🔐 Testing Rule: app_key_is_set
-═══════════════════════════════
-
-✅ APP_KEY is properly configured
-   
-Details:
-- Key length: 32 characters
-- Key format: base64 encoded
-- Environment: local
 ```
 
 ## Global Options
@@ -287,10 +245,13 @@ fi
 ### Automated Testing
 
 ```bash
-# Test all rules individually
-for rule in $(php artisan safeguard:list --enabled --format=json | jq -r '.[].id'); do
-    echo "Testing rule: $rule"
-    php artisan safeguard:test-rule "$rule"
+# List all enabled rules
+php artisan safeguard:list --enabled
+
+# Run checks for all environments
+for env in local staging production; do
+    echo "Testing environment: $env"
+    php artisan safeguard:check --env=$env
 done
 ```
 

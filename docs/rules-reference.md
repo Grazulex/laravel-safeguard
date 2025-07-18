@@ -2,9 +2,13 @@
 
 Laravel Safeguard includes comprehensive security rules organized by category. Each rule can be enabled/disabled in your configuration.
 
+# Security Rules Reference
+
+Laravel Safeguard includes comprehensive security rules organized by category. Each rule can be enabled/disabled in your configuration.
+
 ## Environment & Configuration Rules
 
-### `env_debug_false_in_production`
+### `app-debug-false-in-production`
 **Purpose**: Ensures `APP_DEBUG` is disabled in production environments  
 **Severity**: Critical  
 **Environments**: production, staging  
@@ -19,10 +23,10 @@ APP_DEBUG=true
 
 **Configuration:**
 ```php
-'env_debug_false_in_production' => true,
+'app-debug-false-in-production' => true,
 ```
 
-### `app_key_is_set`
+### `app-key-is-set`
 **Purpose**: Verifies that Laravel application key is generated  
 **Severity**: Critical  
 **Environments**: all  
@@ -34,10 +38,10 @@ php artisan key:generate
 
 **Configuration:**
 ```php
-'app_key_is_set' => true,
+'app-key-is-set' => true,
 ```
 
-### `env_has_all_required_keys`
+### `env-has-all-required-keys`
 **Purpose**: Validates all required environment variables are present  
 **Severity**: Error  
 **Environments**: all  
@@ -46,7 +50,7 @@ Checks that all variables defined in `required_env_vars` config exist in your `.
 
 **Configuration:**
 ```php
-'env_has_all_required_keys' => true,
+'env-has-all-required-keys' => true,
 
 // Define required variables
 'required_env_vars' => [
@@ -58,7 +62,7 @@ Checks that all variables defined in `required_env_vars` config exist in your `.
 ],
 ```
 
-### `no_secrets_in_code`
+### `no-secrets-in-code`
 **Purpose**: Detects hardcoded secrets in your codebase  
 **Severity**: Critical  
 **Environments**: all  
@@ -70,7 +74,7 @@ Scans for patterns like:
 
 **Configuration:**
 ```php
-'no_secrets_in_code' => true,
+'no-secrets-in-code' => true,
 
 // Customize patterns to detect
 'secret_patterns' => [
@@ -84,7 +88,7 @@ Scans for patterns like:
 
 ## Security Rules
 
-### `csrf_enabled`
+### `csrf-enabled`
 **Purpose**: Ensures CSRF protection is enabled  
 **Severity**: Critical  
 **Environments**: all  
@@ -93,52 +97,24 @@ Checks that `VerifyCsrfToken` middleware is active.
 
 **Configuration:**
 ```php
-'csrf_enabled' => true,
+'csrf-enabled' => true,
 ```
 
-### `secure_cookies_in_production`
-**Purpose**: Validates secure cookie settings for production  
+### `composer-package-security`
+**Purpose**: Validates composer packages for known security vulnerabilities  
 **Severity**: Error  
-**Environments**: production, staging  
+**Environments**: all  
 
-Ensures cookies are marked as secure and HTTP-only in production.
-
-**Configuration:**
-```php
-'secure_cookies_in_production' => true,
-```
-
-### `https_enforced_in_production`
-**Purpose**: Verifies HTTPS enforcement in production  
-**Severity**: Warning  
-**Environments**: production  
-
-Checks for HTTPS redirects and secure headers.
+Checks for packages with known security issues and recommends updates.
 
 **Configuration:**
 ```php
-'https_enforced_in_production' => false, // Optional rule
+'composer-package-security' => true,
 ```
 
 ## File System Rules
 
-### `storage_writable`
-**Purpose**: Checks if storage directories are writable  
-**Severity**: Error  
-**Environments**: all  
-
-Validates write permissions on:
-- `storage/app/`
-- `storage/logs/`
-- `storage/framework/`
-- `bootstrap/cache/`
-
-**Configuration:**
-```php
-'storage_writable' => true,
-```
-
-### `env_file_permissions`
+### `env-file-permissions`
 **Purpose**: Ensures `.env` file has proper permissions  
 **Severity**: Critical  
 **Environments**: production, staging  
@@ -147,28 +123,121 @@ Checks that `.env` file is not world-readable (not 644 or 666).
 
 **Configuration:**
 ```php
-'env_file_permissions' => true,
+'env-file-permissions' => true,
 ```
 
-### `sensitive_files_hidden`
-**Purpose**: Verifies sensitive files are not web-accessible  
+## Database Security Rules
+
+### `database-connection-encrypted`
+**Purpose**: Verifies that database connections use SSL/TLS encryption  
 **Severity**: Critical  
 **Environments**: production, staging  
 
-Checks that files like `.env`, `composer.json`, etc., return 404 when accessed via HTTP.
+Ensures database connections are encrypted in transit.
 
 **Configuration:**
 ```php
-'sensitive_files_hidden' => true,
+'database-connection-encrypted' => true,
+```
 
-// Customize files to check
-'sensitive_files' => [
-    '.env',
-    '.env.example',
-    'composer.json',
-    'composer.lock',
-    'artisan',
-],
+### `database-credentials-not-default`
+**Purpose**: Checks for default or weak database credentials  
+**Severity**: Critical  
+**Environments**: all  
+
+Validates that database passwords are not empty, default, or common weak passwords.
+
+**Configuration:**
+```php
+'database-credentials-not-default' => true,
+```
+
+### `database-backup-security`
+**Purpose**: Validates database backup security configuration  
+**Severity**: Error  
+**Environments**: production  
+
+Checks backup encryption, access controls, and retention policies.
+
+**Configuration:**
+```php
+'database-backup-security' => true,
+```
+
+### `database-query-logging`
+**Purpose**: Ensures database query logging is properly configured  
+**Severity**: Warning  
+**Environments**: all  
+
+Validates query logging settings for security monitoring.
+
+**Configuration:**
+```php
+'database-query-logging' => true,
+```
+
+## Authentication Security Rules
+
+### `password-policy-compliance`
+**Purpose**: Verifies that password policy configuration meets security standards  
+**Severity**: Critical  
+**Environments**: all  
+
+Checks password requirements including length, complexity, and validation rules.
+
+**Configuration:**
+```php
+'password-policy-compliance' => true,
+```
+
+### `two-factor-auth-enabled`
+**Purpose**: Validates two-factor authentication configuration  
+**Severity**: Warning  
+**Environments**: production  
+
+Ensures 2FA is properly configured for enhanced security.
+
+**Configuration:**
+```php
+'two-factor-auth-enabled' => true,
+```
+
+### `session-security-settings`
+**Purpose**: Validates session security configuration  
+**Severity**: Error  
+**Environments**: production, staging  
+
+Checks session lifetime, security flags, and storage configuration.
+
+**Configuration:**
+```php
+'session-security-settings' => true,
+```
+
+## Encryption Security Rules
+
+### `encryption-key-rotation`
+**Purpose**: Validates encryption key management and rotation policies  
+**Severity**: Warning  
+**Environments**: production  
+
+Checks for proper key rotation practices and recommendations.
+
+**Configuration:**
+```php
+'encryption-key-rotation' => true,
+```
+
+### `sensitive-data-encryption`
+**Purpose**: Ensures sensitive data is properly encrypted  
+**Severity**: Critical  
+**Environments**: all  
+
+Validates encryption of sensitive database fields and stored data.
+
+**Configuration:**
+```php
+'sensitive-data-encryption' => true,
 ```
 
 ## Rule Severity Levels
@@ -192,20 +261,22 @@ Rules can be configured to run only in specific environments:
 ```php
 'environments' => [
     'production' => [
-        'env_debug_false_in_production',
-        'secure_cookies_in_production',
-        'https_enforced_in_production',
-        'env_file_permissions',
-        'sensitive_files_hidden',
+        'app-debug-false-in-production',
+        'app-key-is-set',
+        'env-file-permissions',
+        'database-connection-encrypted',
+        'database-credentials-not-default',
+        'password-policy-compliance',
+        'encryption-key-rotation',
     ],
     'staging' => [
-        'env_debug_false_in_production',
-        'app_key_is_set',
-        'csrf_enabled',
+        'app-debug-false-in-production',
+        'csrf-enabled',
+        'database-connection-encrypted',
     ],
     'local' => [
-        'app_key_is_set',
-        'storage_writable',
+        'app-key-is-set',
+        'env-has-all-required-keys',
     ],
 ],
 ```

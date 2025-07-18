@@ -21,26 +21,40 @@ return [
     */
     'rules' => [
         // Environment & Configuration Rules - CRITICAL
-        'env_debug_false_in_production' => true,
-        'app_key_is_set' => true,
-        'env_has_all_required_keys' => true,
-        'no_secrets_in_code' => true,
+        'app-debug-false-in-production' => true,
+        'app-key-is-set' => true,
+        'env-has-all-required-keys' => true,
+        'no-secrets-in-code' => true,
 
         // Security Rules - CRITICAL
-        'csrf_enabled' => true,
+        'csrf-enabled' => true,
+        'composer-package-security' => true,
+
+        // File System Rules - CRITICAL
+        'env-file-permissions' => true,
+
+        // Database Security Rules - CRITICAL for production
+        'database-connection-encrypted' => true,
+        'database-credentials-not-default' => true,
+        'database-backup-security' => true,
+        'database-query-logging' => true,
+
+        // Authentication Security Rules - CRITICAL
+        'password-policy-compliance' => true,
+        'two-factor-auth-enabled' => true,
+        'session-security-settings' => true,
+
+        // Encryption Security Rules - CRITICAL
+        'encryption-key-rotation' => true,
+        'sensitive-data-encryption' => true,
         'secure_cookies_in_production' => true,
         'https_enforced_in_production' => true,
 
-        // File System Rules - CRITICAL
-        'env_file_permissions' => true,
-        'sensitive_files_hidden' => true,
-        'storage_writable' => true,
-
         // Custom Rules (if you have them)
-        'database_security_check' => true,
-        'api_security_check' => true,
-        'file_upload_security' => true,
-        'third_party_service_security' => true,
+        'database-security-check' => true,
+        'api-security-check' => true,
+        'file-upload-security' => true,
+        'third-party-service-security' => true,
     ],
 
     /*
@@ -53,12 +67,21 @@ return [
     */
     'environments' => [
         'production' => [
-            'env_debug_false_in_production',
-            'app_key_is_set',
-            'env_has_all_required_keys',
-            'no_secrets_in_code',
-            'csrf_enabled',
-            'secure_cookies_in_production',
+            'app-debug-false-in-production',
+            'app-key-is-set',
+            'env-has-all-required-keys',
+            'no-secrets-in-code',
+            'csrf-enabled',
+            'composer-package-security',
+            'env-file-permissions',
+            'database-connection-encrypted',
+            'database-credentials-not-default',
+            'database-backup-security',
+            'password-policy-compliance',
+            'two-factor-auth-enabled',
+            'session-security-settings',
+            'encryption-key-rotation',
+            'sensitive-data-encryption',
             'https_enforced_in_production',
             'env_file_permissions',
             'sensitive_files_hidden',

@@ -14,21 +14,17 @@ return [
     */
     'rules' => [
         // Environment & Configuration Rules
-        'env_debug_false_in_production' => true,
-        'app_key_is_set' => true,
-        'env_has_all_required_keys' => true,
-        'no_secrets_in_code' => true,
+        'app-debug-false-in-production' => true,
+        'app-key-is-set' => true,
+        'env-has-all-required-keys' => true,
+        'no-secrets-in-code' => true,
 
         // Security Rules
-        'csrf_enabled' => true,
-        'secure_cookies_in_production' => true,
-        'composer_package_security' => true,
-        'storage_writable' => true,
-        'https_enforced_in_production' => false,
+        'csrf-enabled' => true,
+        'composer-package-security' => true,
 
         // File System Rules
-        'env_file_permissions' => true,
-        'sensitive_files_hidden' => true,
+        'env-file-permissions' => true,
 
         // Database Security Rules
         'database-connection-encrypted' => true,
@@ -77,21 +73,23 @@ return [
     */
     'environments' => [
         'production' => [
-            'env_debug_false_in_production',
-            'app_key_is_set',
-            'secure_cookies_in_production',
-            'https_enforced_in_production',
-            'env_file_permissions',
-            'sensitive_files_hidden',
+            'app-debug-false-in-production',
+            'app-key-is-set',
+            'env-file-permissions',
+            'database-connection-encrypted',
+            'database-credentials-not-default',
+            'password-policy-compliance',
+            'encryption-key-rotation',
         ],
         'staging' => [
-            'env_debug_false_in_production',
-            'app_key_is_set',
-            'csrf_enabled',
+            'app-debug-false-in-production',
+            'app-key-is-set',
+            'csrf-enabled',
+            'database-connection-encrypted',
         ],
         'local' => [
-            'app_key_is_set',
-            'storage_writable',
+            'app-key-is-set',
+            'env-has-all-required-keys',
         ],
     ],
 

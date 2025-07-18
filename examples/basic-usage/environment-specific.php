@@ -20,29 +20,29 @@ $environments = [
         'description' => 'Development environment with relaxed rules',
         'command' => 'php artisan safeguard:check --env=local',
         'rules' => [
-            'app_key_is_set' => true,
-            'storage_writable' => true,
-            'env_debug_false_in_production' => false, // Allowed in local
+            'app-key-is-set' => true,
+            'env-has-all-required-keys' => true,
+            'app-debug-false-in-production' => false, // Allowed in local
         ],
     ],
     'staging' => [
         'description' => 'Staging environment with moderate security',
         'command' => 'php artisan safeguard:check --env=staging',
         'rules' => [
-            'app_key_is_set' => true,
-            'env_debug_false_in_production' => true,
-            'csrf_enabled' => true,
+            'app-key-is-set' => true,
+            'app-debug-false-in-production' => true,
+            'csrf-enabled' => true,
         ],
     ],
     'production' => [
         'description' => 'Production environment with strict security',
         'command' => 'php artisan safeguard:check --env=production --fail-on-error',
         'rules' => [
-            'env_debug_false_in_production' => true,
-            'secure_cookies_in_production' => true,
-            'https_enforced_in_production' => true,
-            'env_file_permissions' => true,
-            'sensitive_files_hidden' => true,
+            'app-debug-false-in-production' => true,
+            'app-key-is-set' => true,
+            'env-file-permissions' => true,
+            'database-connection-encrypted' => true,
+            'password-policy-compliance' => true,
         ],
     ],
 ];
@@ -71,7 +71,7 @@ foreach ($environments as $env => $config) {
     switch ($env) {
         case 'local':
             echo "✅ APP_KEY is set\n";
-            echo "✅ Storage directories are writable\n";
+            echo "✅ Environment variables present\n";
             echo "⚠️  APP_DEBUG is enabled (acceptable in local)\n";
             echo "\n";
             echo "═══════════════════════════════════════\n";
@@ -82,7 +82,7 @@ foreach ($environments as $env => $config) {
             echo "✅ APP_KEY is set\n";
             echo "✅ APP_DEBUG is false\n";
             echo "✅ CSRF protection enabled\n";
-            echo "⚠️  HTTPS not enforced (rule disabled for staging)\n";
+            echo "⚠️  Database encryption not required in staging\n";
             echo "\n";
             echo "═══════════════════════════════════════\n";
             echo "🎯 All checks passed! (3 checks)\n";
@@ -91,13 +91,12 @@ foreach ($environments as $env => $config) {
         case 'production':
             echo "✅ APP_KEY is set\n";
             echo "✅ APP_DEBUG is false\n";
-            echo "✅ Secure cookies configured\n";
-            echo "✅ HTTPS enforced\n";
             echo "✅ .env file permissions secure\n";
-            echo "✅ Sensitive files hidden\n";
+            echo "✅ Database connection encrypted\n";
+            echo "✅ Password policy compliant\n";
             echo "\n";
             echo "═══════════════════════════════════════\n";
-            echo "🎯 All checks passed! (6 checks)\n";
+            echo "🎯 All checks passed! (5 checks)\n";
             break;
     }
     echo "---\n\n";
@@ -108,20 +107,20 @@ echo "In config/safeguard.php:\n\n";
 echo "```php\n";
 echo "'environments' => [\n";
 echo "    'local' => [\n";
-echo "        'app_key_is_set',\n";
-echo "        'storage_writable',\n";
+echo "        'app-key-is-set',\n";
+echo "        'env-has-all-required-keys',\n";
 echo "    ],\n";
 echo "    'staging' => [\n";
-echo "        'env_debug_false_in_production',\n";
-echo "        'app_key_is_set',\n";
-echo "        'csrf_enabled',\n";
+echo "        'app-debug-false-in-production',\n";
+echo "        'app-key-is-set',\n";
+echo "        'csrf-enabled',\n";
 echo "    ],\n";
 echo "    'production' => [\n";
-echo "        'env_debug_false_in_production',\n";
-echo "        'secure_cookies_in_production',\n";
-echo "        'https_enforced_in_production',\n";
-echo "        'env_file_permissions',\n";
-echo "        'sensitive_files_hidden',\n";
+echo "        'app-debug-false-in-production',\n";
+echo "        'app-key-is-set',\n";
+echo "        'env-file-permissions',\n";
+echo "        'database-connection-encrypted',\n";
+echo "        'password-policy-compliance',\n";
 echo "    ],\n";
 echo "],\n";
 echo "```\n\n";
