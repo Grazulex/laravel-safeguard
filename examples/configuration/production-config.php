@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Production Configuration Example
- * 
+ *
  * This configuration is optimized for production environments
  * with strict security requirements.
  */
@@ -66,7 +68,7 @@ return [
             'file_upload_security',
             'third_party_service_security',
         ],
-        
+
         // Staging should mirror production
         'staging' => [
             'env_debug_false_in_production',
@@ -118,39 +120,39 @@ return [
         '*_TOKEN',
         '*_PASSWORD',
         '*_PASS',
-        
+
         // API patterns
         'API_*',
         'CLIENT_*',
-        
+
         // Cloud services
         'AWS_*',
         'AZURE_*',
         'GCP_*',
         'GOOGLE_*',
-        
+
         // Payment services
         'STRIPE_*',
         'PAYPAL_*',
         'SQUARE_*',
-        
+
         // Communication services
         'TWILIO_*',
         'SENDGRID_*',
         'MAILGUN_*',
         'PUSHER_*',
-        
+
         // Social media
         'FACEBOOK_*',
         'TWITTER_*',
         'GITHUB_*',
         'LINKEDIN_*',
-        
+
         // Databases
         'REDIS_*',
         'MONGO_*',
         'ELASTIC_*',
-        
+
         // Monitoring & Analytics
         'SENTRY_*',
         'BUGSNAG_*',
@@ -172,7 +174,7 @@ return [
         'APP_ENV',
         'APP_DEBUG',
         'APP_URL',
-        
+
         // Database
         'DB_CONNECTION',
         'DB_HOST',
@@ -180,17 +182,17 @@ return [
         'DB_DATABASE',
         'DB_USERNAME',
         'DB_PASSWORD',
-        
+
         // Cache
         'CACHE_DRIVER',
         'REDIS_HOST',
         'REDIS_PASSWORD',
         'REDIS_PORT',
-        
+
         // Session & Queue
         'SESSION_DRIVER',
         'QUEUE_CONNECTION',
-        
+
         // Mail
         'MAIL_MAILER',
         'MAIL_HOST',
@@ -200,14 +202,14 @@ return [
         'MAIL_ENCRYPTION',
         'MAIL_FROM_ADDRESS',
         'MAIL_FROM_NAME',
-        
+
         // File storage
         'FILESYSTEM_DISK',
-        
+
         // Security
         'SESSION_SECURE_COOKIE',
         'SESSION_SAME_SITE',
-        
+
         // Logging
         'LOG_CHANNEL',
         'LOG_LEVEL',
@@ -228,53 +230,53 @@ return [
         '.env.local',
         '.env.production',
         '.env.staging',
-        
+
         // Composer files
         'composer.json',
         'composer.lock',
         'composer.phar',
-        
+
         // Package files
         'package.json',
         'package-lock.json',
         'yarn.lock',
-        
+
         // Build files
         'webpack.mix.js',
         'vite.config.js',
         'tailwind.config.js',
-        
+
         // Laravel files
         'artisan',
         'server.php',
-        
+
         // Testing files
         'phpunit.xml',
         'phpunit.xml.dist',
         'pest.php',
-        
+
         // Documentation
         'README.md',
         'CHANGELOG.md',
         'LICENSE.md',
         'CONTRIBUTING.md',
-        
+
         // Configuration files
         'phpstan.neon',
         'pint.json',
         'rector.php',
         '.gitignore',
         '.gitattributes',
-        
+
         // IDE files
         '.editorconfig',
         '.php-cs-fixer.php',
-        
+
         // Docker files
         'Dockerfile',
         'docker-compose.yml',
         'docker-compose.yaml',
-        
+
         // CI/CD files
         '.github/',
         '.gitlab-ci.yml',
@@ -295,18 +297,18 @@ return [
     | Production-Specific Settings
     |--------------------------------------------------------------------------
     */
-    
+
     // Fail fast in production - don't continue if critical issues found
     'fail_on_critical' => true,
-    
+
     // Enable detailed logging for security audits
     'log_results' => true,
     'log_channel' => 'security',
-    
+
     // Performance settings for production
     'cache_results' => true,
     'cache_ttl' => 3600, // 1 hour
-    
+
     // Security reporting
     'report_to_sentry' => env('SAFEGUARD_REPORT_TO_SENTRY', false),
     'webhook_url' => env('SAFEGUARD_WEBHOOK_URL'),

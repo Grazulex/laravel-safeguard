@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Basic Laravel Safeguard Usage Example
- * 
+ *
  * This example demonstrates the most basic usage of Laravel Safeguard
  * for running security checks in a Laravel application.
  */

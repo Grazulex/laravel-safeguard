@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * JSON Output Example
- * 
+ *
  * This example demonstrates how to get JSON output from Laravel Safeguard
  * for programmatic usage, CI/CD integration, and reporting.
  */
-
 echo "🔐 Laravel Safeguard - JSON Output Example\n";
 echo "==========================================\n\n";
 
@@ -39,8 +40,8 @@ $exampleOutput = [
             'severity' => 'critical',
             'details' => [
                 'key_length' => 32,
-                'key_format' => 'base64'
-            ]
+                'key_format' => 'base64',
+            ],
         ],
         [
             'rule' => 'env_debug_false_in_production',
@@ -51,8 +52,8 @@ $exampleOutput = [
             'details' => [
                 'current_env' => 'production',
                 'debug_value' => true,
-                'recommendation' => 'Set APP_DEBUG=false in your .env file for production'
-            ]
+                'recommendation' => 'Set APP_DEBUG=false in your .env file for production',
+            ],
         ],
         [
             'rule' => 'csrf_enabled',
@@ -61,8 +62,8 @@ $exampleOutput = [
             'message' => 'CSRF protection is properly configured',
             'severity' => 'critical',
             'details' => [
-                'middleware_active' => true
-            ]
+                'middleware_active' => true,
+            ],
         ],
         [
             'rule' => 'no_secrets_in_code',
@@ -75,10 +76,10 @@ $exampleOutput = [
                     'file' => 'config/services.php',
                     'line' => 15,
                     'pattern' => 'STRIPE_SECRET',
-                    'value' => 'sk_test_***'
+                    'value' => 'sk_test_***',
                 ],
-                'recommendation' => 'Move secrets to environment variables'
-            ]
+                'recommendation' => 'Move secrets to environment variables',
+            ],
         ],
         [
             'rule' => 'secure_cookies_in_production',
@@ -89,8 +90,8 @@ $exampleOutput = [
             'details' => [
                 'secure' => true,
                 'http_only' => true,
-                'same_site' => 'strict'
-            ]
+                'same_site' => 'strict',
+            ],
         ],
         [
             'rule' => 'storage_writable',
@@ -103,11 +104,11 @@ $exampleOutput = [
                     'storage/app',
                     'storage/logs',
                     'storage/framework',
-                    'bootstrap/cache'
-                ]
-            ]
-        ]
-    ]
+                    'bootstrap/cache',
+                ],
+            ],
+        ],
+    ],
 ];
 
 echo "```json\n";

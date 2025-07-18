@@ -22,12 +22,28 @@ return [
         // Security Rules
         'csrf_enabled' => true,
         'secure_cookies_in_production' => true,
+        'composer_package_security' => true,
         'storage_writable' => true,
         'https_enforced_in_production' => false,
 
         // File System Rules
         'env_file_permissions' => true,
         'sensitive_files_hidden' => true,
+
+        // Database Security Rules
+        'database-connection-encrypted' => true,
+        'database-credentials-not-default' => true,
+        'database-backup-security' => true,
+        'database-query-logging' => true,
+
+        // Authentication Security Rules
+        'password-policy-compliance' => true,
+        'two-factor-auth-enabled' => true,
+        'session-security-settings' => true,
+
+        // Encryption Security Rules
+        'encryption-key-rotation' => true,
+        'sensitive-data-encryption' => true,
     ],
 
     /*

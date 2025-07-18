@@ -55,18 +55,18 @@ class SafeguardCheckCommand extends Command
 
         foreach ($results as $check) {
             $result = $check['result'];
-            $icon = $this->getStatusIcon($result->isPassed(), $result->severity());
+            $icon = $this->getStatusIcon($result->passed(), $result->severity());
 
             if (! $ciMode) {
                 $this->line($icon.' '.$result->message());
             } else {
-                $status = $result->isPassed() ? 'PASS' : 'FAIL';
+                $status = $result->passed() ? 'PASS' : 'FAIL';
                 $this->line("[{$status}] {$check['rule']}: {$result->message()}");
             }
 
-            if ($result->isPassed()) {
+            if ($result->passed()) {
                 $passed++;
-            } elseif ($result->isWarning()) {
+            } elseif ($result->severity() === 'warning') {
                 $warnings++;
             } else {
                 $failed++;
@@ -86,7 +86,7 @@ class SafeguardCheckCommand extends Command
 
     private function outputJson(Collection $results): int
     {
-        $passed = $results->filter(fn ($check) => $check['result']->isPassed())->count();
+        $passed = $results->filter(fn ($check) => $check['result']->passed())->count();
         $failed = $results->filter(fn ($check) => $check['result']->isFailed())->count();
 
         $output = [
@@ -101,7 +101,7 @@ class SafeguardCheckCommand extends Command
                 return [
                     'rule' => $check['rule'],
                     'description' => $check['description'],
-                    'status' => $check['result']->isPassed() ? 'passed' : 'failed',
+                    'status' => $check['result']->passed() ? 'passed' : 'failed',
                     'message' => $check['result']->message(),
                     'severity' => $check['result']->severity(),
                     'details' => $check['result']->details(),
