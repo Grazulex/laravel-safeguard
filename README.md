@@ -59,40 +59,53 @@ The package includes a comprehensive configuration file at `config/safeguard.php
 
 return [
     'rules' => [
-        // 🔐 Environment & Secrets
-        'env_debug_false_in_production' => true,
-        'env_has_all_required_keys' => true,
-        'no_secrets_in_code' => true,
-        'no_unused_env_keys' => false,
-        'no_example_mismatch' => true,
+        // 🔐 Environment & Configuration
+        'app-debug-false-in-production' => true,
+        'env-has-all-required-keys' => true,
+        'app-key-is-set' => true,
+        'no-secrets-in-code' => true,
 
-        // ⚙️ Application Configuration
-        'app_key_is_set' => true,
-        'no_test_routes_in_production' => true,
-        'storage_writable' => true,
+        // 🛡️ Security Rules
+        'csrf-enabled' => true,
+        'composer-package-security' => true,
 
-        // 🛡️ Laravel Security
-        'csrf_enabled' => true,
-        'secure_cookies_in_production' => true,
-        'no_forgotten_admin_routes' => true,
-        'session_secure_in_production' => true,
-        'https_enforced_in_production' => false,
+        // 📁 File System Security
+        'env-file-permissions' => true,
+
+        // 🗄️ Database Security
+        'database-connection-encrypted' => true,
+        'database-credentials-not-default' => true,
+        'database-backup-security' => true,
+        'database-query-logging' => true,
+
+        // 🔑 Authentication Security
+        'password-policy-compliance' => true,
+        'two-factor-auth-enabled' => true,
+        'session-security-settings' => true,
+
+        // 🔒 Encryption Security
+        'encryption-key-rotation' => true,
+        'sensitive-data-encryption' => true,
     ],
 
     // 🎯 Environment-specific rules
     'environments' => [
         'production' => [
-            'env_debug_false_in_production',
-            'secure_cookies_in_production',
-            'https_enforced_in_production',
+            'app-debug-false-in-production',
+            'app-key-is-set',
+            'env-file-permissions',
+            'database-connection-encrypted',
+            'password-policy-compliance',
+            'encryption-key-rotation',
         ],
         'staging' => [
-            'env_debug_false_in_production',
-            'csrf_enabled',
+            'app-debug-false-in-production',
+            'csrf-enabled',
+            'database-connection-encrypted',
         ],
     ],
 
-    // 📁 Paths to scan for secrets and unused variables
+    // 📁 Paths to scan for secrets
     'scan_paths' => [
         'app/',
         'config/',
@@ -129,20 +142,33 @@ Run checks for a specific environment:
 php artisan safeguard:check --env=production
 ```
 
-### Single Rule Testing
-
-Test a specific rule in isolation:
-
-```bash
-php artisan safeguard:test-rule env_debug_false_in_production
-```
-
 ### List Available Rules
 
 See all available rules and their status:
 
 ```bash
 php artisan safeguard:list
+```
+
+Filter rules by status or environment:
+
+```bash
+# Show only enabled rules
+php artisan safeguard:list --enabled
+
+# Show rules for specific environment
+php artisan safeguard:list --environment=production
+
+# Show rules by severity
+php artisan safeguard:list --severity=critical
+```
+
+### Create Custom Rules
+
+Generate a new custom security rule:
+
+```bash
+php artisan safeguard:make-rule CustomSecurityRule
 ```
 
 ## 🔎 Example Output
@@ -154,15 +180,16 @@ php artisan safeguard:list
 Environment: production
 
 ✅ APP_KEY is set
-✅ .env has all required keys from .env.example  
+✅ All required environment variables present  
 ❌ APP_DEBUG is true in production
-❌ Secret found in config/services.php (TWILIO_SECRET)
+❌ Hardcoded secret found in config/services.php
 ✅ CSRF protection enabled
-✅ Storage directories are writable
-⚠️  Rule "no_unused_env_keys" is disabled
+✅ Database connection uses encryption
+✅ Password policy meets security standards
+⚠️  Two-factor authentication not configured
 
 ═══════════════════════════════════════
-🎯 2 issues found, 4 checks passed
+🎯 2 critical issues, 1 warning found
 ```
 
 ### JSON Output

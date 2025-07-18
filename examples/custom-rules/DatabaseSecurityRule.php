@@ -19,7 +19,7 @@ class DatabaseSecurityRule implements SafeguardRule
 {
     public function id(): string
     {
-        return 'database_security_check';
+        return 'database-security-check';
     }
 
     public function description(): string
