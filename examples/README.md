@@ -15,28 +15,19 @@ examples/
 ├── custom-rules/                      # Custom security rule examples
 │   ├── make-rule-example.php
 │   ├── DatabaseSecurityRule.php
-│   ├── ApiSecurityRule.php
-│   ├── FileUploadSecurityRule.php
-│   └── ThirdPartyServiceSecurityRule.php
+│   └── AdvancedDatabaseSecurityRule.php
 ├── configuration/                     # Configuration examples
 │   ├── production-config.php
-│   ├── development-config.php
-│   ├── ci-config.php
-│   └── multi-environment-config.php
+│   └── development-config.php
 ├── ci-cd/                            # CI/CD integration examples
 │   ├── github-actions/
-│   ├── gitlab-ci/
-│   ├── jenkins/
-│   ├── azure-pipelines/
-│   └── docker/
-├── scripts/                          # Utility scripts
-│   ├── pre-deploy-check.sh
-│   ├── security-report-generator.php
-│   └── batch-environment-check.php
-└── integration/                      # Framework integration examples
-    ├── artisan-commands/
-    ├── middleware/
-    └── event-listeners/
+│   │   ├── security.yml
+│   │   └── detailed-security.yml
+│   └── gitlab-ci/
+│       └── .gitlab-ci.yml
+└── scripts/                          # Utility scripts
+    ├── pre-deploy-check.sh
+    └── security-report-generator.sh
 ```
 
 ## 🚀 Quick Start Examples
@@ -50,7 +41,7 @@ php simple-check.php
 ### Custom Rule Implementation
 ```bash
 cd examples/custom-rules/
-php -f DatabaseSecurityRule.php
+php make-rule-example.php
 ```
 
 ### CI/CD Setup
@@ -74,53 +65,45 @@ Real-world examples of custom security rules for specific use cases.
 
 - **Make Rule Example**: Complete guide to creating custom rules with different severity levels
 - **Database Security**: Validate database configuration and credentials
-- **API Security**: Check API routes and authentication
-- **File Upload Security**: Validate file upload configurations
-- **Third-Party Services**: Audit external service integrations
+- **Advanced Database Security**: Extended database security validation with comprehensive checks
 
 ### 3. Configuration
 Various configuration setups for different scenarios.
 
 - **Production Config**: Strict security rules for production
 - **Development Config**: Developer-friendly configuration
-- **CI Config**: Optimized for continuous integration
-- **Multi-Environment**: Complex multi-environment setup
 
 ### 4. CI/CD Integration
 Ready-to-use CI/CD pipeline configurations.
 
-- **GitHub Actions**: Complete workflow files
+- **GitHub Actions**: Complete workflow files (basic and detailed)
 - **GitLab CI**: Pipeline configurations
-- **Jenkins**: Declarative and scripted pipelines
-- **Azure Pipelines**: YAML configurations
-- **Docker**: Containerized security checks
 
 ### 5. Scripts
 Utility scripts for automation and reporting.
 
 - **Pre-Deploy Check**: Pre-deployment security validation
 - **Report Generator**: Generate comprehensive security reports
-- **Batch Checker**: Check multiple environments at once
-
-### 6. Integration
-Advanced integration examples with Laravel features.
-
-- **Artisan Commands**: Custom commands that use Safeguard
-- **Middleware**: HTTP middleware for runtime security checks
-- **Event Listeners**: React to security events
 
 ## 🧪 Testing Examples
 
-All examples include tests and can be executed independently:
+All examples include documentation and can be explored:
 
 ```bash
-# Test a specific example
-cd examples/custom-rules/
-php DatabaseSecurityRule.php
+# View a specific example
+cd examples/basic-usage/
+php simple-check.php
 
-# Test all examples
-./test-all-examples.sh
+# View custom rule example
+cd examples/custom-rules/
+php make-rule-example.php
+
+# View script examples
+cd examples/scripts/
+cat pre-deploy-check.sh
 ```
+
+**Note**: Examples are primarily demonstration scripts that show concepts and expected output. To actually run Laravel Safeguard commands, you need a Laravel application environment.
 
 ## 🔧 Requirements
 
