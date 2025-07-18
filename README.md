@@ -14,29 +14,38 @@
   [![Code Style](https://img.shields.io/badge/code%20style-pint-orange)](https://github.com/laravel/pint)
 </div>
 
-## 🧠 Problem Solved
+## <span style="color: #FF9900;">📊 Overview</span>
+
+<div style="background: linear-gradient(135deg, #FF9900 0%, #D2D200 25%, #88C600 75%, #00B470 100%); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
+  <h3 style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin: 0 0 10px 0;">🔐 Configurable Security Auditing for Laravel</h3>
+  <p style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); margin: 0; font-size: 16px;">Like <strong>Pint</strong>, <strong>PHPStan</strong>, or <strong>Rector</strong> — but for security and configuration auditing with detailed issue reporting and CI/CD integration</p>
+</div>
+
+## <span style="color: #D2D200;">🧠 Problem Solved</span>
 
 In real-world Laravel applications, many production issues come from misconfigured environments and security oversights:
 
-- ❌ **Missing critical variables** (APP_KEY, DB_PASSWORD, etc.)
-- 🔓 **Hardcoded secrets** in code instead of environment variables
-- 🚨 **Inconsistencies** between `.env.example` and `.env`
-- 🗑️ **Unused or legacy keys** inherited from other projects
-- ⚠️ **Security misconfigurations** (ex: `APP_DEBUG=true` in production)
-- 🔒 **Insecure defaults** that should be changed before going live
+- ❌ **<span style="color: #FF9900;">Missing critical variables</span>** (APP_KEY, DB_PASSWORD, etc.)
+- 🔓 **<span style="color: #D2D200;">Hardcoded secrets</span>** in code instead of environment variables
+- 🚨 **<span style="color: #88C600;">Inconsistencies</span>** between `.env.example` and `.env`
+- 🗑️ **<span style="color: #00B470;">Unused or legacy keys</span>** inherited from other projects
+- ⚠️ **<span style="color: #FF9900;">Security misconfigurations</span>** (ex: `APP_DEBUG=true` in production)
+- 🔒 **<span style="color: #D2D200;">Insecure defaults</span>** that should be changed before going live
 
-Laravel Safeguard acts like **Pint, PHPStan, or Rector** but for **security and configuration auditing** — with configurable rules you can enable/disable based on your needs.
+<div style="border-left: 4px solid #88C600; padding-left: 15px; background-color: #f8f9fa; margin: 15px 0;">
+  <p><strong style="color: #88C600;">Laravel Safeguard</strong> acts like <strong style="color: #FF9900;">Pint, PHPStan, or Rector</strong> but for <strong style="color: #00B470;">security and configuration auditing</strong> — with configurable rules you can enable/disable based on your needs.</p>
+</div>
 
-## ✨ Features
+## <span style="color: #88C600;">✨ Features</span>
 
-🔧 **Configurable Rules System** — Enable/disable security checks via `config/safeguard.php`  
-🔐 **Environment Security** — Verify `.env` files, detect secrets in code, validate required keys  
-⚙️ **Application Configuration** — Check Laravel-specific security settings  
-🛡️ **Production Safety** — Prevent common production mistakes before deployment  
-📊 **Multiple Output Formats** — CLI, JSON, or CI-friendly reporting  
-🚀 **CI/CD Integration** — Perfect for GitHub Actions, GitLab CI, and other pipelines  
+🔧 **<span style="color: #FF9900;">Configurable Rules System</span>** — Enable/disable security checks via `config/safeguard.php`  
+🔐 **<span style="color: #D2D200;">Environment Security</span>** — Verify `.env` files, detect secrets in code, validate required keys  
+⚙️ **<span style="color: #88C600;">Application Configuration</span>** — Check Laravel-specific security settings  
+🛡️ **<span style="color: #00B470;">Production Safety</span>** — Prevent common production mistakes before deployment  
+📊 **<span style="color: #FF9900;">Multiple Output Formats</span>** — CLI, JSON, or CI-friendly reporting with **detailed issue descriptions**  
+🚀 **<span style="color: #D2D200;">CI/CD Integration</span>** — Perfect for GitHub Actions, GitLab CI, and other pipelines  
 
-## 📦 Installation
+## <span style="color: #00B470;">📦 Installation</span>
 
 Install the package via Composer:
 
@@ -50,9 +59,11 @@ Publish the configuration file:
 php artisan vendor:publish --tag=safeguard-config
 ```
 
-## 🔧 Configuration
+## <span style="color: #FF9900;">🔧 Configuration</span>
 
-The package includes a comprehensive configuration file at `config/safeguard.php`:
+<div style="border-left: 4px solid #FF9900; padding-left: 15px; background-color: #fff8f0; margin: 15px 0;">
+  <p>The package includes a comprehensive configuration file at <code style="color: #FF9900;">config/safeguard.php</code>:</p>
+</div>
 
 ```php
 <?php
@@ -124,9 +135,9 @@ return [
 ];
 ```
 
-## 🖥️ Usage
+## <span style="color: #D2D200;">🖥️ Usage</span>
 
-### Basic Security Check
+### <span style="color: #88C600;">Basic Security Check</span>
 
 Run all enabled security rules:
 
@@ -134,7 +145,7 @@ Run all enabled security rules:
 php artisan safeguard:check
 ```
 
-### Environment-Specific Checks
+### <span style="color: #00B470;">Environment-Specific Checks</span>
 
 Run checks for a specific environment:
 
@@ -142,9 +153,11 @@ Run checks for a specific environment:
 php artisan safeguard:check --env=production
 ```
 
-### Detailed Output
+### <span style="color: #FF9900;">Detailed Output</span>
 
-Show additional information for failed checks:
+<div style="border-left: 4px solid #D2D200; padding-left: 15px; background-color: #fffdf0; margin: 15px 0;">
+  <p><strong style="color: #D2D200;">New!</strong> Show additional information for failed checks with <strong style="color: #88C600;">intelligent formatting</strong>:</p>
+</div>
 
 ```bash
 php artisan safeguard:check --details
@@ -156,7 +169,7 @@ Show detailed information for all checks:
 php artisan safeguard:check --show-all
 ```
 
-### List Available Rules
+### <span style="color: #88C600;">List Available Rules</span>
 
 See all available rules and their status:
 
@@ -177,7 +190,7 @@ php artisan safeguard:list --environment=production
 php artisan safeguard:list --severity=critical
 ```
 
-### Create Custom Rules
+### <span style="color: #00B470;">Create Custom Rules</span>
 
 Generate a new custom security rule:
 
@@ -191,9 +204,9 @@ With specific severity level:
 php artisan safeguard:make-rule CriticalSecurityRule --severity=error
 ```
 
-## 🔎 Example Output
+## <span style="color: #FF9900;">🔎 Example Output</span>
 
-### Basic Output
+### <span style="color: #D2D200;">Basic Output</span>
 
 ```
 🔐 Laravel Safeguard Security Check
@@ -214,7 +227,11 @@ Environment: production
 🎯 2 critical issues, 1 warning found
 ```
 
-### Detailed Output (with --details flag)
+### <span style="color: #88C600;">Detailed Output (with --details flag)</span>
+
+<div style="border-left: 4px solid #88C600; padding-left: 15px; background-color: #f8fff8; margin: 15px 0;">
+  <p><strong style="color: #88C600;">Enhanced!</strong> Now shows <strong style="color: #FF9900;">structured information</strong> with <strong style="color: #00B470;">icons and formatting</strong> for better readability:</p>
+</div>
 
 ```
 🔐 Laravel Safeguard Security Check
@@ -225,16 +242,20 @@ Environment: production
 ✅ APP_KEY is set
 ✅ All required environment variables present  
 ❌ APP_DEBUG is true in production
-   ⚙️ Current Setting: true
+   💡 Current Setting: true
    💡 Recommendation: Set APP_DEBUG=false in production environment
    ⚠️ Security Impact: Debug mode exposes sensitive application information
 
 ❌ Hardcoded secret found in config/services.php
    📁 File Path: config/services.php
-   📋 Detected Secrets:
-     • STRIPE_SECRET on line 15
-     • API_TOKEN on line 23
-   💡 Recommendation: Move secrets to environment variables
+   📋 Issues Found:
+     🔍 [CRITICAL] Secret Pattern - Package: config/services.php
+       📝 STRIPE_SECRET detected on line 15
+       ⚠️ Risk: Hardcoded secrets in configuration files
+     🔍 [ERROR] Api Token - Package: config/services.php  
+       📝 API_TOKEN detected on line 23
+       � Reason: Should be moved to environment variables
+   �💡 Recommendation: Move secrets to environment variables
 
 ✅ CSRF protection enabled
 ✅ Database connection uses encryption
@@ -242,18 +263,25 @@ Environment: production
 ⚠️  Two-factor authentication not configured
    📌 Current Status: Not configured
    💡 Recommendation: Enable 2FA for enhanced security
+   📋 Recommendations:
+     • Install Laravel Fortify or similar 2FA package
+     • Configure backup codes for account recovery
 
 ═══════════════════════════════════════
 🎯 2 critical issues, 1 warning found
 ```
 
-### JSON Output
+### <span style="color: #00B470;">JSON Output</span>
 
 For programmatic use or CI integration:
 
 ```bash
 php artisan safeguard:check --format=json
 ```
+
+<div style="border-left: 4px solid #00B470; padding-left: 15px; background-color: #f0ffff; margin: 15px 0;">
+  <p><strong style="color: #00B470;">Enhanced JSON:</strong> Now includes <strong style="color: #FF9900;">separated errors and warnings</strong> for better CI integration:</p>
+</div>
 
 ```json
 {
@@ -262,23 +290,33 @@ php artisan safeguard:check --format=json
   "summary": {
     "total": 6,
     "passed": 4,
-    "failed": 2,
-    "disabled": 1
+    "errors": 2,
+    "warnings": 1
   },
-  "results": [
-    {
-      "rule": "env_debug_false_in_production",
-      "status": "failed",
-      "message": "APP_DEBUG is true in production",
-      "severity": "error"
-    }
-  ]
+  "results": {
+    "errors": [
+      {
+        "rule": "app-debug-false-in-production",
+        "status": "failed",
+        "message": "APP_DEBUG is true in production",
+        "severity": "error"
+      }
+    ],
+    "warnings": [
+      {
+        "rule": "two-factor-auth-enabled", 
+        "status": "warning",
+        "message": "Two-factor authentication not configured",
+        "severity": "warning"
+      }
+    ]
+  }
 }
 ```
 
-## 🧪 CI/CD Integration
+## <span style="color: #88C600;">🧪 CI/CD Integration</span>
 
-### GitHub Actions
+### <span style="color: #D2D200;">GitHub Actions</span>
 
 ```yaml
 name: Security Audit
@@ -303,7 +341,7 @@ jobs:
         run: php artisan safeguard:check --ci --fail-on-error
 ```
 
-### GitLab CI
+### <span style="color: #FF9900;">GitLab CI</span>
 
 ```yaml
 security_audit:
@@ -316,28 +354,28 @@ security_audit:
     - main
 ```
 
-## 📋 Available Rules
+## <span style="color: #00B470;">📋 Available Rules</span>
 
-### 🔐 Environment & Secrets
+### <span style="color: #FF9900;">🔐 Environment & Secrets</span>
 - `env_debug_false_in_production` — Ensures APP_DEBUG is false in production
 - `env_has_all_required_keys` — Validates all .env.example keys exist in .env
 - `no_secrets_in_code` — Detects hardcoded secrets in your codebase
 - `no_unused_env_keys` — Identifies unused environment variables
 - `no_example_mismatch` — Ensures .env and .env.example are in sync
 
-### ⚙️ Application Configuration
+### <span style="color: #D2D200;">⚙️ Application Configuration</span>
 - `app_key_is_set` — Verifies Laravel APP_KEY is generated
 - `no_test_routes_in_production` — Prevents test routes in production
 - `storage_writable` — Checks storage directories are writable
 
-### 🛡️ Laravel Security
+### <span style="color: #88C600;">🛡️ Laravel Security</span>
 - `csrf_enabled` — Ensures CSRF protection is active
 - `secure_cookies_in_production` — Validates secure cookie settings
 - `session_secure_in_production` — Checks session security configuration
 - `https_enforced_in_production` — Verifies HTTPS enforcement
 - `no_forgotten_admin_routes` — Detects potentially dangerous admin routes
 
-## 🔨 Custom Rules
+## <span style="color: #FF9900;">🔨 Custom Rules</span>
 
 Create your own security rules by extending the base rule class:
 
@@ -345,7 +383,9 @@ Create your own security rules by extending the base rule class:
 php artisan safeguard:make-rule CustomSecurityRule
 ```
 
-This generates a new rule class in `app/SafeguardRules/`:
+<div style="border-left: 4px solid #FF9900; padding-left: 15px; background-color: #fff8f0; margin: 15px 0;">
+  <p>This generates a new rule class in <code style="color: #FF9900;">app/SafeguardRules/</code>:</p>
+</div>
 
 ```php
 <?php
@@ -375,7 +415,7 @@ class CustomSecurityRule implements SafeguardRule
 }
 ```
 
-## 🧪 Testing
+## <span style="color: #D2D200;">🧪 Testing</span>
 
 Run the test suite:
 
@@ -389,52 +429,56 @@ Run with coverage:
 composer test -- --coverage
 ```
 
-## 📚 Documentation
+## <span style="color: #88C600;">📚 Documentation</span>
 
 For comprehensive documentation, see the [`docs/`](docs/) directory:
 
-- **[Installation Guide](docs/installation.md)** - Step-by-step installation and setup
-- **[Quick Start](docs/quick-start.md)** - Get up and running in minutes
-- **[Configuration Guide](docs/configuration.md)** - Comprehensive configuration options
-- **[Security Rules Reference](docs/rules-reference.md)** - Complete list of available rules
-- **[Custom Rules Guide](docs/custom-rules.md)** - Create your own security rules
-- **[CI/CD Integration](docs/ci-cd-integration.md)** - GitHub Actions, GitLab CI, and more
-- **[Commands Reference](docs/commands.md)** - All available artisan commands
-- **[Output Formats](docs/output-formats.md)** - CLI, JSON, and CI-friendly outputs
-- **[FAQ](docs/faq.md)** - Frequently asked questions
-- **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
+- **[<span style="color: #FF9900;">Installation Guide</span>](docs/installation.md)** - Step-by-step installation and setup
+- **[<span style="color: #D2D200;">Quick Start</span>](docs/quick-start.md)** - Get up and running in minutes
+- **[<span style="color: #88C600;">Configuration Guide</span>](docs/configuration.md)** - Comprehensive configuration options
+- **[<span style="color: #00B470;">Security Rules Reference</span>](docs/rules-reference.md)** - Complete list of available rules
+- **[<span style="color: #FF9900;">Custom Rules Guide</span>](docs/custom-rules.md)** - Create your own security rules
+- **[<span style="color: #D2D200;">CI/CD Integration</span>](docs/ci-cd-integration.md)** - GitHub Actions, GitLab CI, and more
+- **[<span style="color: #88C600;">Commands Reference</span>](docs/commands.md)** - All available artisan commands
+- **[<span style="color: #00B470;">Output Formats</span>](docs/output-formats.md)** - CLI, JSON, and CI-friendly outputs
+- **[<span style="color: #FF9900;">FAQ</span>](docs/faq.md)** - Frequently asked questions
+- **[<span style="color: #D2D200;">Troubleshooting</span>](docs/troubleshooting.md)** - Common issues and solutions
 
-## 💡 Examples
+## <span style="color: #00B470;">💡 Examples</span>
 
 The [`examples/`](examples/) directory contains practical examples and code samples:
 
-- **[Basic Usage](examples/basic-usage/)** - Simple examples to get started
-- **[Custom Rules](examples/custom-rules/)** - Real-world custom security rules
-- **[Configuration](examples/configuration/)** - Various configuration setups
-- **[CI/CD](examples/ci-cd/)** - Ready-to-use CI/CD pipeline configurations
-- **[Scripts](examples/scripts/)** - Utility scripts for automation
+- **[<span style="color: #88C600;">Basic Usage</span>](examples/basic-usage/)** - Simple examples to get started
+- **[<span style="color: #FF9900;">Custom Rules</span>](examples/custom-rules/)** - Real-world custom security rules
+- **[<span style="color: #D2D200;">Configuration</span>](examples/configuration/)** - Various configuration setups
+- **[<span style="color: #00B470;">CI/CD</span>](examples/ci-cd/)** - Ready-to-use CI/CD pipeline configurations
+- **[<span style="color: #88C600;">Scripts</span>](examples/scripts/)** - Utility scripts for automation
 
-## 📈 Changelog
+## <span style="color: #FF9900;">📈 Changelog</span>
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Please see [<span style="color: #D2D200;">CHANGELOG</span>](CHANGELOG.md) for more information on what has changed recently.
 
-## 🤝 Contributing
+## <span style="color: #88C600;">🤝 Contributing</span>
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+Please see [<span style="color: #00B470;">CONTRIBUTING</span>](CONTRIBUTING.md) for details.
 
-## 🔒 Security Vulnerabilities
+## <span style="color: #FF9900;">🔒 Security Vulnerabilities</span>
 
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
+Please review [<span style="color: #D2D200;">our security policy</span>](../../security/policy) on how to report security vulnerabilities.
 
-## 📄 License
+## <span style="color: #88C600;">📄 License</span>
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). Please see [<span style="color: #00B470;">License File</span>](LICENSE.md) for more information.
 
-## 💡 Credits
+## <span style="color: #FF9900;">💡 Credits</span>
 
-- [Jean-Marc Strauven](https://github.com/grazulex)
-- [All Contributors](../../contributors)
+- [<span style="color: #D2D200;">Jean-Marc Strauven</span>](https://github.com/grazulex)
+- [<span style="color: #88C600;">All Contributors</span>](../../contributors)
 
 ---
 
-**Laravel Safeguard** — Because security should be as simple as running `php artisan safeguard:check` ✅
+<div style="text-align: center; padding: 20px; background: linear-gradient(90deg, #FF9900 0%, #D2D200 50%, #88C600 100%); border-radius: 10px; margin: 20px 0;">
+  <p style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); margin: 0; font-size: 18px; font-weight: bold;">
+    <strong>Laravel Safeguard</strong> — Because security should be as simple as running <code style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">php artisan safeguard:check</code> ✅
+  </p>
+</div>
