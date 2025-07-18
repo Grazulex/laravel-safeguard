@@ -91,7 +91,7 @@ class SafeguardCheckCommand extends Command
     private function outputJson(Collection $results): int
     {
         $passed = $results->filter(fn ($check) => $check['result']->passed())->count();
-        $failed = $results->filter(fn ($check) => $check['result']->isFailed())->count();
+        $failed = $results->filter(fn ($check): bool => ! $check['result']->passed())->count();
 
         $output = [
             'status' => $failed > 0 ? 'failed' : 'passed',

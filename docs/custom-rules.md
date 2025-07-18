@@ -423,7 +423,7 @@ class DatabaseSecurityRuleTest extends TestCase
         $rule = new DatabaseSecurityRule();
         $result = $rule->check();
         
-        $this->assertTrue($result->isFailed());
+        $this->assertFalse($result->passed());
         $this->assertStringContains('default password', $result->message());
     }
 
@@ -434,7 +434,7 @@ class DatabaseSecurityRuleTest extends TestCase
         $rule = new DatabaseSecurityRule();
         $result = $rule->check();
         
-        $this->assertTrue($result->isPassed());
+        $this->assertTrue($result->passed());
     }
 }
 ```
