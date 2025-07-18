@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Environment-Specific Security Checks Example
- * 
+ *
  * This example demonstrates how to run security checks for different environments
  * with Laravel Safeguard.
  */
-
 echo "🔐 Laravel Safeguard - Environment-Specific Checks\n";
 echo "==================================================\n\n";
 
@@ -22,7 +23,7 @@ $environments = [
             'app_key_is_set' => true,
             'storage_writable' => true,
             'env_debug_false_in_production' => false, // Allowed in local
-        ]
+        ],
     ],
     'staging' => [
         'description' => 'Staging environment with moderate security',
@@ -31,7 +32,7 @@ $environments = [
             'app_key_is_set' => true,
             'env_debug_false_in_production' => true,
             'csrf_enabled' => true,
-        ]
+        ],
     ],
     'production' => [
         'description' => 'Production environment with strict security',
@@ -42,8 +43,8 @@ $environments = [
             'https_enforced_in_production' => true,
             'env_file_permissions' => true,
             'sensitive_files_hidden' => true,
-        ]
-    ]
+        ],
+    ],
 ];
 
 foreach ($environments as $env => $config) {
@@ -57,7 +58,7 @@ foreach ($environments as $env => $config) {
         echo "  {$status} {$rule}\n";
     }
     echo "\n";
-    
+
     echo "Expected output for {$env}:\n";
     echo "---\n";
     echo "🔐 Laravel Safeguard Security Check\n";
@@ -65,7 +66,7 @@ foreach ($environments as $env => $config) {
     echo "\n";
     echo "Environment: {$env}\n";
     echo "\n";
-    
+
     // Simulate some example output based on environment
     switch ($env) {
         case 'local':
@@ -76,7 +77,7 @@ foreach ($environments as $env => $config) {
             echo "═══════════════════════════════════════\n";
             echo "🎯 All checks passed! (3 checks)\n";
             break;
-            
+
         case 'staging':
             echo "✅ APP_KEY is set\n";
             echo "✅ APP_DEBUG is false\n";
@@ -86,7 +87,7 @@ foreach ($environments as $env => $config) {
             echo "═══════════════════════════════════════\n";
             echo "🎯 All checks passed! (3 checks)\n";
             break;
-            
+
         case 'production':
             echo "✅ APP_KEY is set\n";
             echo "✅ APP_DEBUG is false\n";

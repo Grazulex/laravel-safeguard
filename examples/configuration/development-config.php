@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Development Configuration Example
- * 
+ *
  * This configuration is optimized for development environments
  * with developer-friendly settings.
  */
@@ -54,7 +56,7 @@ return [
             'storage_writable',
             'env_has_all_required_keys',
         ],
-        
+
         'development' => [
             'app_key_is_set',
             'storage_writable',
@@ -62,7 +64,7 @@ return [
             'env_has_all_required_keys',
             'no_secrets_in_code',
         ],
-        
+
         'testing' => [
             'app_key_is_set',
             'storage_writable',
@@ -103,16 +105,16 @@ return [
         '*_SECRET',
         '*_TOKEN',
         '*_PASSWORD',
-        
+
         // Common API patterns
         'API_*',
         'STRIPE_*',
         'PAYPAL_*',
-        
+
         // Development-specific patterns
         'TEST_*_SECRET',
         'DEV_*_KEY',
-        
+
         // Remove overly broad patterns that may cause false positives
         // '*_PASS',
         // 'CLIENT_*',
@@ -132,13 +134,13 @@ return [
         'APP_ENV',
         'APP_DEBUG',
         'APP_URL',
-        
+
         // Database (basic)
         'DB_CONNECTION',
         'DB_HOST',
         'DB_DATABASE',
         'DB_USERNAME',
-        
+
         // Optional in development
         // 'DB_PASSWORD',     // May be empty in local development
         // 'REDIS_HOST',      // May not be used
@@ -158,7 +160,7 @@ return [
         '.env.local',
         'composer.json',
         'package.json',
-        
+
         // Keep development files accessible
         // 'README.md',       // Useful for developers
         // '.env.example',    // Template file
@@ -170,39 +172,39 @@ return [
     | Development-Specific Settings
     |--------------------------------------------------------------------------
     */
-    
+
     // Don't fail on errors in development - just warn
     'fail_on_critical' => false,
-    
+
     // Minimal logging in development
     'log_results' => false,
-    
+
     // No caching in development for immediate feedback
     'cache_results' => false,
-    
+
     // Development performance settings
     'scan_timeout' => 30,           // Shorter timeout
     'max_file_size' => 1024 * 1024, // Skip large files (1MB)
-    
+
     // Development notifications (disable for less noise)
     'report_to_sentry' => false,
     'webhook_url' => null,
-    
+
     /*
     |--------------------------------------------------------------------------
     | Developer Convenience Features
     |--------------------------------------------------------------------------
     */
-    
+
     // Show detailed information in development
     'show_rule_details' => true,
     'show_recommendations' => true,
     'show_file_paths' => true,
-    
+
     // Development-friendly error handling
     'continue_on_error' => true,
     'suppress_warnings' => false,
-    
+
     /*
     |--------------------------------------------------------------------------
     | Custom Rules Configuration
@@ -210,35 +212,35 @@ return [
     */
     'custom_rules_path' => 'app/SafeguardRules', // app_path('SafeguardRules'),
     'custom_rules_namespace' => 'App\\SafeguardRules',
-    
+
     // Auto-load custom rules in development
     'auto_load_custom_rules' => true,
-    
+
     /*
     |--------------------------------------------------------------------------
     | Development Testing Configuration
     |--------------------------------------------------------------------------
     */
-    
+
     // Enable rule testing mode
     'testing_mode' => env('SAFEGUARD_TESTING', false),
-    
+
     // Mock external services in development
     'mock_external_services' => true,
-    
+
     // Skip expensive checks in development
     'skip_expensive_checks' => [
         'file_content_scanning',
         'network_connectivity_checks',
         'external_api_validation',
     ],
-    
+
     /*
     |--------------------------------------------------------------------------
     | IDE Integration
     |--------------------------------------------------------------------------
     */
-    
+
     // Generate IDE-friendly output
     'ide_integration' => [
         'phpstorm' => [
