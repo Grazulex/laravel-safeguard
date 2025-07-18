@@ -6,11 +6,11 @@ namespace Grazulex\LaravelSafeguard\Rules\Security;
 
 use DateTimeImmutable;
 use Exception;
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Illuminate\Support\Facades\File;
 
-class ComposerPackageSecurity implements SafeguardRule
+class ComposerPackageSecurity extends AbstractSafeguardRule
 {
     public function id(): string
     {

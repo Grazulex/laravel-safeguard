@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Rules\Authentication;
 
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 
-class PasswordPolicyCompliance implements SafeguardRule
+class PasswordPolicyCompliance extends AbstractSafeguardRule
 {
     public function id(): string
     {

@@ -57,7 +57,7 @@ class SafeguardCheckCommand extends Command
     private function outputCli(Collection $results, bool $ciMode): int
     {
         $passed = 0;
-        $failed = 0;
+        $errors = 0; // Erreurs/critiques seulement
         $warnings = 0;
         $showDetails = $this->option('details');
         $showAll = $this->option('show-all');
@@ -83,15 +83,18 @@ class SafeguardCheckCommand extends Command
             } elseif ($result->severity() === 'warning') {
                 $warnings++;
             } else {
-                $failed++;
+                // Erreurs, critiques, etc.
+                $errors++;
             }
         }
 
         if (! $ciMode) {
-            $this->showSummary($passed, $failed, $warnings);
+            $this->showSummary($passed, $errors, $warnings);
         }
 
-        if ($this->option('fail-on-error') && $failed > 0) {
+        // En mode CI ou avec --fail-on-error, retourner un code d'erreur si des erreurs/critiques sont détectées
+        // Ne pas échouer pour les warnings seulement
+        if (($ciMode || $this->option('fail-on-error')) && $errors > 0) {
             return 1;
         }
 
@@ -101,15 +104,17 @@ class SafeguardCheckCommand extends Command
     private function outputJson(Collection $results): int
     {
         $passed = $results->filter(fn ($check) => $check['result']->passed())->count();
-        $failed = $results->filter(fn ($check): bool => ! $check['result']->passed())->count();
+        $errors = $results->filter(fn ($check): bool => ! $check['result']->passed() && $check['result']->severity() !== 'warning')->count();
+        $warnings = $results->filter(fn ($check): bool => ! $check['result']->passed() && $check['result']->severity() === 'warning')->count();
 
         $output = [
-            'status' => $failed > 0 ? 'failed' : 'passed',
+            'status' => $errors > 0 ? 'failed' : ($warnings > 0 ? 'warning' : 'passed'),
             'environment' => app()->environment(),
             'summary' => [
                 'total' => $results->count(),
                 'passed' => $passed,
-                'failed' => $failed,
+                'errors' => $errors,
+                'warnings' => $warnings,
             ],
             'results' => $results->map(function (array $check): array {
                 return [
@@ -125,7 +130,8 @@ class SafeguardCheckCommand extends Command
 
         $this->line(json_encode($output, JSON_PRETTY_PRINT));
 
-        return $failed > 0 && $this->option('fail-on-error') ? 1 : 0;
+        // Retourner un code d'erreur seulement pour les erreurs/critiques, pas pour les warnings
+        return $errors > 0 ? 1 : 0;
     }
 
     private function getStatusIcon(bool $passed, string $severity): string
@@ -142,20 +148,39 @@ class SafeguardCheckCommand extends Command
         };
     }
 
-    private function showSummary(int $passed, int $failed, int $warnings): void
+    private function showSummary(int $passed, int $errors, int $warnings): void
     {
         $this->line('');
         $this->info('═══════════════════════════════════════');
 
-        if ($failed === 0 && $warnings === 0) {
+        if ($errors === 0 && $warnings === 0) {
             $this->info("🎯 All checks passed! ({$passed} checks)");
         } else {
-            $issues = $failed + $warnings;
+            $issues = $errors + $warnings;
             $this->comment("🎯 {$issues} issues found, {$passed} checks passed");
+
+            if ($errors > 0 && $warnings > 0) {
+                $this->comment("   ({$errors} errors/critical, {$warnings} warnings)");
+            } elseif ($errors > 0) {
+                $this->comment("   ({$errors} errors/critical)");
+            } else {
+                $this->comment("   ({$warnings} warnings)");
+            }
         }
     }
 
     private function showResultDetails(SafeguardResult $result): void
+    {
+        // For now, use basic formatting. Future enhancement could integrate
+        // with SafeguardManager to get rule instances for custom formatting.
+        $this->showBasicResultDetails($result);
+        $this->line('');
+    }
+
+    /**
+     * Basic fallback formatting for rules that don't implement custom formatting.
+     */
+    private function showBasicResultDetails(SafeguardResult $result): void
     {
         $details = $result->details();
 
@@ -163,48 +188,25 @@ class SafeguardCheckCommand extends Command
             return;
         }
 
-        // Format special keys with better labels
-        $formatMap = [
-            'current_setting' => 'Current Setting',
-            'recommendation' => 'Recommendation',
-            'security_impact' => 'Security Impact',
-            'issues' => 'Issues Found',
-            'recommendations' => 'Recommendations',
-            'vulnerable_packages' => 'Vulnerable Packages',
-            'outdated_packages' => 'Outdated Packages',
-            'abandoned_packages' => 'Abandoned Packages',
-            'file_path' => 'File Path',
-            'current_permissions' => 'Current Permissions',
-            'recommended_permissions' => 'Recommended Permissions',
-            'detected_secrets' => 'Detected Secrets',
-            'csrf_status' => 'CSRF Status',
-            'packages_analyzed' => 'Packages Analyzed',
-        ];
-
         foreach ($details as $key => $value) {
-            $label = $formatMap[$key] ?? ucwords(str_replace('_', ' ', $key));
+            $label = ucwords(str_replace('_', ' ', $key));
+            $icon = match ($key) {
+                'recommendation' => '�',
+                'security_impact' => '⚠️',
+                'current_setting' => '⚙️',
+                default => '📌'
+            };
 
             if (is_array($value)) {
                 $this->comment("   📋 {$label}:");
                 foreach ($value as $item) {
-                    if (is_array($item)) {
-                        $this->line('     • '.json_encode($item));
-                    } else {
+                    if (is_string($item)) {
                         $this->line("     • {$item}");
                     }
                 }
             } else {
-                $icon = match ($key) {
-                    'recommendation' => '💡',
-                    'security_impact' => '⚠️',
-                    'current_setting' => '⚙️',
-                    'file_path' => '📁',
-                    default => '📌'
-                };
                 $this->comment("   {$icon} {$label}: {$value}");
             }
         }
-
-        $this->line('');
     }
 }

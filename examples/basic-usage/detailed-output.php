@@ -8,7 +8,6 @@ declare(strict_types=1);
  * This example demonstrates how to get detailed information about
  * security check results using the --details and --show-all options.
  */
-
 echo "🔐 Laravel Safeguard - Detailed Output Example\n";
 echo "===============================================\n\n";
 

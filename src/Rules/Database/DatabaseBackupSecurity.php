@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Rules\Database;
 
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Illuminate\Support\Facades\File;
 
-class DatabaseBackupSecurity implements SafeguardRule
+class DatabaseBackupSecurity extends AbstractSafeguardRule
 {
     public function id(): string
     {

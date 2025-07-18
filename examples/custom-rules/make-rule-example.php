@@ -8,7 +8,6 @@ declare(strict_types=1);
  * This example demonstrates how to create custom security rules
  * using the safeguard:make-rule command with different severity levels.
  */
-
 echo "🔧 Laravel Safeguard - Make Rule Command Example\n";
 echo "=================================================\n\n";
 

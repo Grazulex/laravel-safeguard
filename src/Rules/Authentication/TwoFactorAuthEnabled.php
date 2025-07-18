@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Grazulex\LaravelSafeguard\Rules\Authentication;
 
 use Exception;
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 
-class TwoFactorAuthEnabled implements SafeguardRule
+class TwoFactorAuthEnabled extends AbstractSafeguardRule
 {
     public function id(): string
     {

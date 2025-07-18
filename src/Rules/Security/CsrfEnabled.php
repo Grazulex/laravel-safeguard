@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Rules\Security;
 
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use ReflectionClass;
 use ReflectionException;
 
-class CsrfEnabled implements SafeguardRule
+class CsrfEnabled extends AbstractSafeguardRule
 {
     public function id(): string
     {
