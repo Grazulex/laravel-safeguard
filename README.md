@@ -1,7 +1,7 @@
 # Laravel Safeguard
 
 <div align="center">
-  <img src="logo.png" alt="Laravel Safeguard" width="100">
+  <img src="new_logo.png" alt="Laravel Safeguard" width="100">
   <p><strong>Configurable security checks for Laravel applications — Run safety audits on environment variables, configuration files, and hidden routes to prevent common mistakes before going live.</strong></p>
   
   [![Latest Version](https://img.shields.io/packagist/v/grazulex/laravel-safeguard)](https://packagist.org/packages/grazulex/laravel-safeguard)
