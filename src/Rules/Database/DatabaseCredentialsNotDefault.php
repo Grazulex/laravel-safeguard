@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Rules\Database;
 
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 
-class DatabaseCredentialsNotDefault implements SafeguardRule
+class DatabaseCredentialsNotDefault extends AbstractSafeguardRule
 {
     private const DEFAULT_CREDENTIALS = [
         'root' => ['', 'root', 'password', 'admin', 'toor'],

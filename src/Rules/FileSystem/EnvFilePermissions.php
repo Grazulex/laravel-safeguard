@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Rules\FileSystem;
 
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Illuminate\Support\Facades\File;
 
-class EnvFilePermissions implements SafeguardRule
+class EnvFilePermissions extends AbstractSafeguardRule
 {
     public function id(): string
     {

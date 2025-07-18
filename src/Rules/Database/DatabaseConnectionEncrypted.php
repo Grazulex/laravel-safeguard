@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Rules\Database;
 
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use PDO;
 
-class DatabaseConnectionEncrypted implements SafeguardRule
+class DatabaseConnectionEncrypted extends AbstractSafeguardRule
 {
     public function id(): string
     {

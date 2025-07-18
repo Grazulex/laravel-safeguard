@@ -32,4 +32,13 @@ interface SafeguardRule
      * Severity level of this rule (info, warning, error, critical).
      */
     public function severity(): string;
+
+    /**
+     * Format detailed output for this rule's result.
+     * This allows each rule to control how its details are displayed.
+     *
+     * @param  SafeguardResult  $result  The result to format
+     * @return array Array of formatted lines to display
+     */
+    public function formatDetails(SafeguardResult $result): array;
 }

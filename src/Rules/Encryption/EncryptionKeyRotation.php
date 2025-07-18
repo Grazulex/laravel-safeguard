@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Rules\Encryption;
 
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Illuminate\Support\Facades\File;
 
-class EncryptionKeyRotation implements SafeguardRule
+class EncryptionKeyRotation extends AbstractSafeguardRule
 {
     public function id(): string
     {
@@ -70,6 +70,92 @@ class EncryptionKeyRotation implements SafeguardRule
     public function severity(): string
     {
         return 'error';
+    }
+
+    /**
+     * Custom formatting for encryption key rotation details.
+     */
+    public function formatDetails(SafeguardResult $result): array
+    {
+        $details = $result->details();
+        $lines = [];
+
+        if ($details === []) {
+            return $lines;
+        }
+
+        // Format issues
+        if (isset($details['issues']) && ! empty($details['issues'])) {
+            $lines[] = '   📋 Issues Found:';
+            foreach ($details['issues'] as $issue) {
+                $severity = mb_strtoupper($issue['severity']);
+                $type = $issue['type'] ?? 'Unknown';
+                $lines[] = "     🔍 [{$severity}] {$type}";
+                if (isset($issue['message'])) {
+                    $lines[] = "       📝 {$issue['message']}";
+                }
+                if (isset($issue['risk'])) {
+                    $lines[] = "       ⚠️  Risk: {$issue['risk']}";
+                }
+            }
+        }
+
+        // Format recommendations
+        if (isset($details['recommendations']) && ! empty($details['recommendations'])) {
+            $lines[] = '   📋 Recommendations:';
+            foreach ($details['recommendations'] as $recommendation) {
+                $lines[] = "     • {$recommendation}";
+            }
+        }
+
+        // Format key status with specialized formatting
+        if (isset($details['key_status']) && ! empty($details['key_status'])) {
+            $lines[] = '   📋 Key Status:';
+
+            $labels = [
+                'app_key_set' => 'App Key Set',
+                'key_format' => 'Key Format',
+                'key_length' => 'Key Length (bytes)',
+                'appears_secure' => 'Appears Secure',
+                'rotation_implemented' => 'Rotation Implemented',
+                'multiple_keys_supported' => 'Multiple Keys Supported',
+                'env_file_exists' => 'Environment File Exists',
+                'env_file_permissions' => 'Environment File Permissions',
+                'backup_strategy' => 'Backup Strategy',
+                'key_versioning' => 'Key Versioning',
+                'cipher' => 'Cipher Algorithm',
+                'additional_libraries' => 'Additional Libraries',
+            ];
+
+            foreach ($details['key_status'] as $key => $value) {
+                $label = $labels[$key] ?? ucwords(str_replace('_', ' ', $key));
+
+                // Skip empty values
+                if ($this->isEmpty($value)) {
+                    continue;
+                }
+
+                if (is_array($value) && $value !== []) {
+                    $lines[] = "     🔑 {$label}: ".implode(', ', $value);
+                } else {
+                    // Format boolean values
+                    if ($value === 1 || $value === '1') {
+                        $value = 'Yes';
+                    } elseif ($value === 0 || $value === '0') {
+                        $value = 'No';
+                    }
+
+                    $lines[] = "     🔑 {$label}: {$value}";
+                }
+            }
+        }
+
+        // Add total issues count if available
+        if (isset($details['issues']) && ! empty($details['issues'])) {
+            $lines[] = '   📌 Total Issues: '.count($details['issues']);
+        }
+
+        return $lines;
     }
 
     private function checkAppKeyConfiguration(array &$issues, array &$recommendations, array &$keyStatus): void

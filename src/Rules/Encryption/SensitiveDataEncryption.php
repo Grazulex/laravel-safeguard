@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Rules\Encryption;
 
-use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Illuminate\Support\Facades\File;
 use ReflectionClass;
 use ReflectionException;
 
-class SensitiveDataEncryption implements SafeguardRule
+class SensitiveDataEncryption extends AbstractSafeguardRule
 {
     private const SENSITIVE_FIELD_PATTERNS = [
         'password', 'secret', 'token', 'key', 'ssn', 'social_security',
@@ -86,6 +86,84 @@ class SensitiveDataEncryption implements SafeguardRule
     public function severity(): string
     {
         return 'error';
+    }
+
+    /**
+     * Custom formatting for sensitive data encryption details.
+     */
+    public function formatDetails(SafeguardResult $result): array
+    {
+        $details = $result->details();
+        $lines = [];
+
+        if ($details === []) {
+            return $lines;
+        }
+
+        // Format issues
+        if (isset($details['issues']) && ! empty($details['issues'])) {
+            $lines[] = '   📋 Issues Found:';
+            foreach ($details['issues'] as $issue) {
+                if (is_array($issue)) {
+                    $severity = mb_strtoupper($issue['severity'] ?? 'ERROR');
+                    $type = $issue['type'] ?? 'Unknown Issue';
+                    $lines[] = "     🔍 [{$severity}] {$type}";
+                    if (isset($issue['message'])) {
+                        $lines[] = "       📝 {$issue['message']}";
+                    }
+                } else {
+                    $lines[] = "     🔍 [ERROR] {$issue}";
+                }
+            }
+        }
+
+        // Format recommendations
+        if (isset($details['recommendations']) && ! empty($details['recommendations'])) {
+            $lines[] = '   📋 Recommendations:';
+            foreach ($details['recommendations'] as $recommendation) {
+                $lines[] = "     • {$recommendation}";
+            }
+        }
+
+        // Format scan results with specialized formatting
+        if (isset($details['scan_results']) && ! empty($details['scan_results'])) {
+            $lines[] = '   📋 Scan Results:';
+
+            $labels = [
+                'models_scanned' => 'Models Scanned',
+                'models_with_issues' => 'Models with Issues',
+                'encrypted_fields_count' => 'Encrypted Fields Count',
+                'unencrypted_fields_count' => 'Unencrypted Fields Count',
+                'custom_encryption' => 'Custom Encryption Detected',
+                'migration_files_with_sensitive_data' => 'Migration Files with Sensitive Data',
+            ];
+
+            foreach ($details['scan_results'] as $key => $value) {
+                $label = $labels[$key] ?? ucwords(str_replace('_', ' ', $key));
+
+                if (is_array($value) && $value !== []) {
+                    $lines[] = "     📁 {$label}:";
+                    foreach ($value as $migration) {
+                        if (is_array($migration)) {
+                            $file = $migration['file'] ?? 'Unknown file';
+                            $pattern = $migration['pattern'] ?? 'Unknown pattern';
+                            $lines[] = "       • {$file} (Pattern: {$pattern})";
+                        } else {
+                            $lines[] = "       • {$migration}";
+                        }
+                    }
+                } elseif (! $this->isEmpty($value)) {
+                    $lines[] = "     📊 {$label}: {$value}";
+                }
+            }
+        }
+
+        // Add total issues count if available
+        if (isset($details['issues']) && ! empty($details['issues'])) {
+            $lines[] = '   📌 Total Issues: '.count($details['issues']);
+        }
+
+        return $lines;
     }
 
     /**
