@@ -48,10 +48,21 @@ jobs:
         php artisan safeguard:check \
           --env=${{ matrix.environment }} \
           --format=json \
+          --show-all \
           --ci > security-report-${{ matrix.environment }}.json
         
         # Capture exit code
         echo "exit_code=$?" >> $GITHUB_OUTPUT
+        
+    - name: Run detailed security checks (for logs)
+      if: always()
+      continue-on-error: true
+      run: |
+        echo "🔐 Running detailed security checks for ${{ matrix.environment }}..."
+        php artisan safeguard:check \
+          --env=${{ matrix.environment }} \
+          --details \
+          --ci
         
     - name: Parse security results
       id: parse-results

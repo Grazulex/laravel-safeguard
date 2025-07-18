@@ -58,7 +58,21 @@ Run checks for production environment:
 php artisan safeguard:check --env=production
 ```
 
-### 3. JSON Output for Automation
+### 3. Get Detailed Information
+
+For more information about failures:
+
+```bash
+php artisan safeguard:check --details
+```
+
+See detailed information for all checks:
+
+```bash
+php artisan safeguard:check --show-all
+```
+
+### 4. JSON Output for Automation
 
 Get machine-readable output:
 
@@ -90,7 +104,7 @@ return [
 Here's what a typical security check might reveal:
 
 ```bash
-php artisan safeguard:check --env=production
+php artisan safeguard:check --env=production --details
 ```
 
 ```
@@ -101,8 +115,17 @@ Environment: production
 
 ✅ APP_KEY is set
 ❌ APP_DEBUG is true in production
+   ⚙️ Current Setting: true
+   💡 Recommendation: Set APP_DEBUG=false in production environment
+   ⚠️ Security Impact: Debug mode exposes sensitive application information
+
 ✅ CSRF protection enabled
 ❌ Secret found in config/services.php (STRIPE_SECRET)
+   📁 File Path: config/services.php
+   📋 Detected Secrets:
+     • STRIPE_SECRET on line 15
+   💡 Recommendation: Move secret to environment variable
+
 ✅ Storage directories are writable
 ⚠️  HTTPS not enforced (rule disabled)
 

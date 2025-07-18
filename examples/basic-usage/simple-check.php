@@ -40,6 +40,12 @@ echo "════════════════════════�
 echo "🎯 All checks passed! (4 checks)\n";
 echo "---\n\n";
 
+echo "For detailed information about failures, use:\n";
+echo "  php artisan safeguard:check --details\n\n";
+
+echo "For detailed information about all checks, use:\n";
+echo "  php artisan safeguard:check --show-all\n\n";
+
 echo "For JSON output, use:\n";
 echo "  php artisan safeguard:check --format=json\n\n";
 

@@ -163,6 +163,11 @@ run_security_check() {
         cmd="$cmd --ci"
     fi
     
+    # Add details flag for verbose mode or when not in JSON format
+    if [[ "$VERBOSE" == "true" ]] || [[ "$FORMAT" != "json" ]]; then
+        cmd="$cmd --details"
+    fi
+    
     verbose "Running command: $cmd"
     
     # Run the security check

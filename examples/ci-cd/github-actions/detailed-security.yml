@@ -1,0 +1,196 @@
+name: Detailed Security Audit
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  detailed-security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql
+        coverage: none
+        
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-interaction
+      
+    - name: Create .env file
+      run: |
+        cp .env.example .env
+        php artisan key:generate
+        
+    # Quick overview check
+    - name: Quick security overview
+      run: |
+        echo "🔍 Quick Security Overview"
+        echo "=========================="
+        php artisan safeguard:check --ci
+        
+    # Detailed check for failures only
+    - name: Detailed analysis of failures
+      continue-on-error: true
+      run: |
+        echo ""
+        echo "🔍 Detailed Analysis (Failures Only)"
+        echo "===================================="
+        php artisan safeguard:check --details --ci
+        
+    # Comprehensive audit with all details
+    - name: Comprehensive security audit
+      continue-on-error: true
+      run: |
+        echo ""
+        echo "🔍 Comprehensive Security Audit"
+        echo "==============================="
+        php artisan safeguard:check --show-all --ci
+        
+    # Production-specific detailed checks
+    - name: Production security validation
+      continue-on-error: true
+      run: |
+        echo ""
+        echo "🔍 Production Security Validation"
+        echo "================================="
+        php artisan safeguard:check --env=production --details --ci
+        
+    # Generate comprehensive JSON report
+    - name: Generate comprehensive report
+      run: |
+        echo "📊 Generating comprehensive security report..."
+        php artisan safeguard:check --show-all --format=json > security-detailed-report.json
+        
+        # Create human-readable summary
+        echo "# 🔐 Detailed Security Report" > security-report.md
+        echo "" >> security-report.md
+        echo "Generated: $(date)" >> security-report.md
+        echo "" >> security-report.md
+        
+        # Extract summary information
+        STATUS=$(jq -r '.status' security-detailed-report.json)
+        TOTAL=$(jq -r '.summary.total' security-detailed-report.json)
+        PASSED=$(jq -r '.summary.passed' security-detailed-report.json)
+        FAILED=$(jq -r '.summary.failed' security-detailed-report.json)
+        
+        echo "## Summary" >> security-report.md
+        echo "- **Overall Status**: $STATUS" >> security-report.md
+        echo "- **Total Checks**: $TOTAL" >> security-report.md
+        echo "- **Passed**: $PASSED" >> security-report.md
+        echo "- **Failed**: $FAILED" >> security-report.md
+        echo "" >> security-report.md
+        
+        # Add detailed findings
+        if [ "$FAILED" -gt 0 ]; then
+          echo "## ❌ Failed Checks" >> security-report.md
+          echo "" >> security-report.md
+          jq -r '.results[] | select(.status == "failed") | "### " + .rule + "\n\n" + "**Message**: " + .message + "\n\n" + "**Severity**: " + .severity + "\n\n" + (if .details.recommendation then "**Recommendation**: " + .details.recommendation + "\n\n" else "" end) + (if .details.security_impact then "**Security Impact**: " + .details.security_impact + "\n\n" else "" end)' security-detailed-report.json >> security-report.md
+        fi
+        
+        echo "## ✅ Passed Checks" >> security-report.md
+        echo "" >> security-report.md
+        jq -r '.results[] | select(.status == "passed") | "- **" + .rule + "**: " + .message' security-detailed-report.json >> security-report.md
+        
+    - name: Upload detailed reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: detailed-security-reports
+        path: |
+          security-detailed-report.json
+          security-report.md
+        retention-days: 30
+        
+    - name: Comment PR with detailed analysis
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          if (!fs.existsSync('security-detailed-report.json')) return;
+          
+          const report = JSON.parse(fs.readFileSync('security-detailed-report.json', 'utf8'));
+          
+          let comment = `## 🔐 Detailed Security Analysis\n\n`;
+          
+          // Status overview
+          if (report.status === 'passed') {
+            comment += `✅ **All security checks passed!**\n\n`;
+          } else {
+            comment += `❌ **Security issues detected**\n\n`;
+          }
+          
+          comment += `**Summary:**\n`;
+          comment += `- Total Checks: ${report.summary.total}\n`;
+          comment += `- Passed: ${report.summary.passed}\n`;
+          comment += `- Failed: ${report.summary.failed}\n\n`;
+          
+          // Failed checks with detailed info
+          const failedResults = report.results.filter(r => r.status === 'failed');
+          if (failedResults.length > 0) {
+            comment += `### ❌ Issues Found\n\n`;
+            for (const result of failedResults) {
+              comment += `#### ${result.rule}\n`;
+              comment += `**Message:** ${result.message}\n`;
+              comment += `**Severity:** ${result.severity}\n`;
+              
+              if (result.details) {
+                if (result.details.recommendation) {
+                  comment += `**Recommendation:** ${result.details.recommendation}\n`;
+                }
+                if (result.details.security_impact) {
+                  comment += `**Security Impact:** ${result.details.security_impact}\n`;
+                }
+                if (result.details.current_setting) {
+                  comment += `**Current Setting:** ${result.details.current_setting}\n`;
+                }
+              }
+              comment += `\n`;
+            }
+          }
+          
+          // Passed checks summary
+          const passedResults = report.results.filter(r => r.status === 'passed');
+          if (passedResults.length > 0) {
+            comment += `<details>\n`;
+            comment += `<summary>✅ Passed Checks (${passedResults.length})</summary>\n\n`;
+            for (const result of passedResults) {
+              comment += `- **${result.rule}**: ${result.message}\n`;
+            }
+            comment += `</details>\n\n`;
+          }
+          
+          comment += `---\n`;
+          comment += `💡 **Tip:** Use \`php artisan safeguard:check --details\` locally to see detailed information about any failures.\n`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+          
+    # Final security gate for production
+    - name: Security gate for production
+      run: |
+        echo "🚪 Final Security Gate"
+        echo "======================"
+        
+        # Run strict production check
+        php artisan safeguard:check --env=production --fail-on-error --details
+        
+        if [ $? -eq 0 ]; then
+          echo "✅ Security gate passed - safe to deploy!"
+        else
+          echo "❌ Security gate failed - deployment blocked!"
+          exit 1
+        fi
