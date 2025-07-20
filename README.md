@@ -10,7 +10,6 @@
   [![PHP Version](https://img.shields.io/badge/php-%5E8.3-blue)](https://php.net)
   [![Laravel Version](https://img.shields.io/badge/laravel-%5E12.19-red)](https://laravel.com)
   [![Tests](https://github.com/Grazulex/laravel-safeguard/workflows/Tests/badge.svg)](https://github.com/Grazulex/laravel-safeguard/actions)
-  [![Code Quality](https://github.com/Grazulex/laravel-safeguard/workflows/Code%20Quality/badge.svg)](https://github.com/Grazulex/laravel-safeguard/actions)
   [![Code Style](https://img.shields.io/badge/code%20style-pint-orange)](https://github.com/laravel/pint)
 </div>
 
@@ -496,31 +495,20 @@ The [`examples/`](examples/) directory contains practical examples and code samp
 - **[<span style="color: #00B470;">CI/CD</span>](examples/ci-cd/)** - Ready-to-use CI/CD pipeline configurations
 - **[<span style="color: #88C600;">Scripts</span>](examples/scripts/)** - Utility scripts for automation
 
-## <span style="color: #FF9900;">📈 Changelog</span>
+## <span style="color: #88C600;">🤝</span> Contributing
 
-Please see [<span style="color: #D2D200;">CHANGELOG</span>](CHANGELOG.md) for more information on what has changed recently.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-## <span style="color: #88C600;">🤝 Contributing</span>
+## <span style="color: #FF9900;">🔒</span> Security
 
-Please see [<span style="color: #00B470;">CONTRIBUTING</span>](CONTRIBUTING.md) for details.
+If you discover a security vulnerability, please review our [Security Policy](SECURITY.md) before disclosing it.
 
-## <span style="color: #FF9900;">🔒 Security Vulnerabilities</span>
+## <span style="color: #FF9900;">📄</span> License
 
-Please review [<span style="color: #D2D200;">our security policy</span>](../../security/policy) on how to report security vulnerabilities.
-
-## <span style="color: #88C600;">📄 License</span>
-
-The MIT License (MIT). Please see [<span style="color: #00B470;">License File</span>](LICENSE.md) for more information.
-
-## <span style="color: #FF9900;">💡 Credits</span>
-
-- [<span style="color: #D2D200;">Jean-Marc Strauven</span>](https://github.com/grazulex)
-- [<span style="color: #88C600;">All Contributors</span>](../../contributors)
+Laravel Safeguard is open-sourced software licensed under the [MIT license](LICENSE.md).
 
 ---
 
-<div style="text-align: center; padding: 20px; background: linear-gradient(90deg, #FF9900 0%, #D2D200 50%, #88C600 100%); border-radius: 10px; margin: 20px 0;">
-  <p style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); margin: 0; font-size: 18px; font-weight: bold;">
-    <strong>Laravel Safeguard</strong> — Because security should be as simple as running <code style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">php artisan safeguard:check</code> ✅
-  </p>
+<div align="center">
+  Made with <span style="color: #FF9900;">❤️</span> for the <span style="color: #88C600;">Laravel</span> community
 </div>
