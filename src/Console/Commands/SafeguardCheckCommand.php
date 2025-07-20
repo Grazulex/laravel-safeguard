@@ -8,6 +8,7 @@ use Grazulex\LaravelSafeguard\SafeguardResult;
 use Grazulex\LaravelSafeguard\Services\SafeguardManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class SafeguardCheckCommand extends Command
 {
@@ -29,10 +30,6 @@ class SafeguardCheckCommand extends Command
         $ciMode = $this->option('ci');
         $useEnvRules = $this->option('env-rules');
 
-        if (! $ciMode) {
-            $this->showHeader();
-        }
-
         $results = $useEnvRules
             ? $manager->runChecksForEnvironment($environment)
             : $manager->runChecks($environment);
@@ -41,17 +38,21 @@ class SafeguardCheckCommand extends Command
             return $this->outputJson($results);
         }
 
+        if (! $ciMode) {
+            $this->showHeader();
+        }
+
         return $this->outputCli($results, $ciMode);
     }
 
     private function showHeader(): void
     {
-        $this->line('');
-        $this->info('🔐 Laravel Safeguard Security Check');
-        $this->info('═══════════════════════════════════════');
-        $this->line('');
-        $this->comment('Environment: '.app()->environment());
-        $this->line('');
+        // Force l'output même dans des contextes programmatiques
+        $this->output->writeln('🔐 Laravel Safeguard Security Check', OutputInterface::VERBOSITY_NORMAL);
+        $this->output->writeln('═══════════════════════════════════════', OutputInterface::VERBOSITY_NORMAL);
+        $this->output->writeln('', OutputInterface::VERBOSITY_NORMAL);
+        $this->output->writeln('<comment>Environment: '.app()->environment().'</comment>', OutputInterface::VERBOSITY_NORMAL);
+        $this->output->writeln('', OutputInterface::VERBOSITY_NORMAL);
     }
 
     private function outputCli(Collection $results, bool $ciMode): int
@@ -67,7 +68,8 @@ class SafeguardCheckCommand extends Command
             $icon = $this->getStatusIcon($result->passed(), $result->severity());
 
             if (! $ciMode) {
-                $this->line($icon.' '.$result->message());
+                // Force l'output avec writeIn pour assurer la visibilité
+                $this->output->writeln($icon.' '.$result->message(), OutputInterface::VERBOSITY_NORMAL);
 
                 // Show details if requested
                 if (($showDetails && ! $result->passed()) || $showAll) {
@@ -75,7 +77,7 @@ class SafeguardCheckCommand extends Command
                 }
             } else {
                 $status = $result->passed() ? 'PASS' : 'FAIL';
-                $this->line("[{$status}] {$check['rule']}: {$result->message()}");
+                $this->output->writeln("[{$status}] {$check['rule']}: {$result->message()}", OutputInterface::VERBOSITY_NORMAL);
             }
 
             if ($result->passed()) {
@@ -110,6 +112,7 @@ class SafeguardCheckCommand extends Command
         $output = [
             'status' => $errors > 0 ? 'failed' : ($warnings > 0 ? 'warning' : 'passed'),
             'environment' => app()->environment(),
+            'timestamp' => now()->toISOString(),
             'summary' => [
                 'total' => $results->count(),
                 'passed' => $passed,
@@ -128,7 +131,16 @@ class SafeguardCheckCommand extends Command
             })->values()->all(),
         ];
 
-        $this->line(json_encode($output, JSON_PRETTY_PRINT));
+        // Utiliser des options JSON pour une meilleure lisibilité et compatibilité
+        $json = json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if ($json === false) {
+            $this->output->writeln('<error>Failed to encode JSON output: '.json_last_error_msg().'</error>', OutputInterface::VERBOSITY_NORMAL);
+
+            return 1;
+        }
+
+        $this->line($json);
 
         // Retourner un code d'erreur seulement pour les erreurs/critiques, pas pour les warnings
         return $errors > 0 ? 1 : 0;
@@ -174,7 +186,7 @@ class SafeguardCheckCommand extends Command
         // For now, use basic formatting. Future enhancement could integrate
         // with SafeguardManager to get rule instances for custom formatting.
         $this->showBasicResultDetails($result);
-        $this->line('');
+        $this->output->writeln('', OutputInterface::VERBOSITY_NORMAL);
     }
 
     /**
@@ -191,21 +203,21 @@ class SafeguardCheckCommand extends Command
         foreach ($details as $key => $value) {
             $label = ucwords(str_replace('_', ' ', $key));
             $icon = match ($key) {
-                'recommendation' => '�',
+                'recommendation' => '💡',
                 'security_impact' => '⚠️',
                 'current_setting' => '⚙️',
                 default => '📌'
             };
 
             if (is_array($value)) {
-                $this->comment("   📋 {$label}:");
+                $this->output->writeln("<comment>   📋 {$label}:</comment>", OutputInterface::VERBOSITY_NORMAL);
                 foreach ($value as $item) {
                     if (is_string($item)) {
-                        $this->line("     • {$item}");
+                        $this->output->writeln("     • {$item}", OutputInterface::VERBOSITY_NORMAL);
                     }
                 }
             } else {
-                $this->comment("   {$icon} {$label}: {$value}");
+                $this->output->writeln("   {$icon} {$label}: {$value}", OutputInterface::VERBOSITY_NORMAL);
             }
         }
     }
