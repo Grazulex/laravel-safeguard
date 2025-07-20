@@ -17,8 +17,8 @@ This guide helps you migrate between versions of Laravel Safeguard and upgrade y
 
 **Version 1.x:** Snake case rule IDs
 ```php
-'env_debug_false_in_production' => true,
-'app_key_is_set' => true,
+'app-debug-false-in-production' => true,
+'app-key-is-set' => true,
 ```
 
 **Version 2.x:** Kebab case rule IDs
@@ -77,10 +77,10 @@ php artisan vendor:publish --tag=safeguard-config --force
 Old format:
 ```php
 'rules' => [
-    'env_debug_false_in_production' => true,
-    'app_key_is_set' => true,
-    'csrf_enabled' => true,
-    'no_secrets_in_code' => true,
+    'app-debug-false-in-production' => true,
+    'app-key-is-set' => true,
+    'csrf-enabled' => true,
+    'no-secrets-in-code' => true,
 ],
 ```
 
@@ -100,8 +100,8 @@ Old format:
 ```php
 'environments' => [
     'production' => [
-        'env_debug_false_in_production',
-        'app_key_is_set',
+        'app-debug-false-in-production',
+        'app-key-is-set',
     ],
 ],
 ```
@@ -142,7 +142,7 @@ Update any scripts that reference old rule names:
 
 Old script:
 ```bash
-php artisan safeguard:test-rule env_debug_false_in_production
+php artisan safeguard:test-rule app-debug-false-in-production
 ```
 
 New script:
@@ -198,13 +198,13 @@ $content = file_get_contents($configPath);
 
 // Rule ID migrations
 $migrations = [
-    'env_debug_false_in_production' => 'app-debug-false-in-production',
-    'app_key_is_set' => 'app-key-is-set',
-    'csrf_enabled' => 'csrf-enabled',
-    'no_secrets_in_code' => 'no-secrets-in-code',
-    'env_has_all_required_keys' => 'env-has-all-required-keys',
-    'env_file_permissions' => 'env-file-permissions',
-    'composer_package_security' => 'composer-package-security',
+    'app-debug-false-in-production' => 'app-debug-false-in-production',
+    'app-key-is-set' => 'app-key-is-set',
+    'csrf-enabled' => 'csrf-enabled',
+    'no-secrets-in-code' => 'no-secrets-in-code',
+    'env-has-all-required-keys' => 'env-has-all-required-keys',
+    'env-file-permissions' => 'env-file-permissions',
+    'composer-package-security' => 'composer-package-security',
 ];
 
 foreach ($migrations as $old => $new) {
@@ -234,7 +234,7 @@ php migrate-safeguard.php
 
 **Old usage:**
 ```bash
-php artisan safeguard:test-rule app_key_is_set
+php artisan safeguard:test-rule app-key-is-set
 ```
 
 **New alternative:**
@@ -268,7 +268,7 @@ The JSON output format has minor changes for consistency:
 **Old format:**
 ```json
 {
-  "rule_id": "env_debug_false_in_production",
+  "rule_id": "app-debug-false-in-production",
   "status": "failed"
 }
 ```
@@ -292,18 +292,18 @@ Here's a complete migration example:
 <?php
 return [
     'rules' => [
-        'env_debug_false_in_production' => true,
-        'app_key_is_set' => true,
-        'env_has_all_required_keys' => true,
-        'no_secrets_in_code' => true,
-        'csrf_enabled' => true,
-        'env_file_permissions' => true,
+        'app-debug-false-in-production' => true,
+        'app-key-is-set' => true,
+        'env-has-all-required-keys' => true,
+        'no-secrets-in-code' => true,
+        'csrf-enabled' => true,
+        'env-file-permissions' => true,
     ],
     'environments' => [
         'production' => [
-            'env_debug_false_in_production',
-            'app_key_is_set',
-            'env_file_permissions',
+            'app-debug-false-in-production',
+            'app-key-is-set',
+            'env-file-permissions',
         ],
     ],
     'scan_paths' => [
@@ -387,7 +387,7 @@ php artisan safeguard:check --ci --format=json
 
 **Error:**
 ```
-Rule 'env_debug_false_in_production' not found
+Rule 'app-debug-false-in-production' not found
 ```
 
 **Solution:**

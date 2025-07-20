@@ -71,8 +71,8 @@ Configure different rules for different environments:
 ```
     ],
     'local' => [
-        'app_key_is_set',
-        'storage_writable',
+        'app-key-is-set',
+        'env-has-all-required-keys',
     ],
 ],
 ```
@@ -163,21 +163,21 @@ For a strict production-only security check:
 
 ```php
 'rules' => [
-    'env_debug_false_in_production' => true,
+    'app-debug-false-in-production' => true,
     'secure_cookies_in_production' => true,
     'https_enforced_in_production' => true,
-    'env_file_permissions' => true,
+    'env-file-permissions' => true,
     // Disable development-focused rules
-    'storage_writable' => false,
-    'no_secrets_in_code' => false,
+    'env-has-all-required-keys' => false,
+    'no-secrets-in-code' => false,
 ],
 
 'environments' => [
     'production' => [
-        'env_debug_false_in_production',
+        'app-debug-false-in-production',
         'secure_cookies_in_production',
         'https_enforced_in_production',
-        'env_file_permissions',
+        'env-file-permissions',
     ],
 ],
 ```
@@ -188,11 +188,11 @@ For development environments with relaxed rules:
 
 ```php
 'rules' => [
-    'app_key_is_set' => true,
-    'storage_writable' => true,
-    'csrf_enabled' => true,
+    'app-key-is-set' => true,
+    'env-has-all-required-keys' => true,
+    'csrf-enabled' => true,
     // Disable strict production rules
-    'env_debug_false_in_production' => false,
+    'app-debug-false-in-production' => false,
     'https_enforced_in_production' => false,
 ],
 ```
@@ -203,11 +203,11 @@ For continuous integration environments:
 
 ```php
 'rules' => [
-    'env_has_all_required_keys' => true,
-    'no_secrets_in_code' => true,
-    'app_key_is_set' => true,
+    'env-has-all-required-keys' => true,
+    'no-secrets-in-code' => true,
+    'app-key-is-set' => true,
     // Disable environment-specific rules
-    'env_debug_false_in_production' => false,
+    'app-debug-false-in-production' => false,
     'secure_cookies_in_production' => false,
 ],
 

@@ -7,10 +7,12 @@ This directory contains practical examples and code samples for using Laravel Sa
 ```
 examples/
 ├── README.md                          # This file
+├── comprehensive-demo.php             # Complete feature demonstration
 ├── basic-usage/                       # Basic usage examples
 │   ├── simple-check.php
 │   ├── detailed-output.php
 │   ├── environment-specific.php
+│   ├── environment-specific-advanced.php
 │   └── json-output.php
 ├── custom-rules/                      # Custom security rule examples
 │   ├── make-rule-example.php
@@ -31,6 +33,11 @@ examples/
 ```
 
 ## 🚀 Quick Start Examples
+
+### Complete Feature Demo
+```bash
+php comprehensive-demo.php
+```
 
 ### Basic Security Check
 ```bash
@@ -58,6 +65,7 @@ Learn the fundamentals of Laravel Safeguard with simple, practical examples.
 - **Simple Check**: Basic security audit
 - **Detailed Output**: Using --details and --show-all options for comprehensive information
 - **Environment-Specific**: Running checks for different environments
+- **Environment-Specific Advanced**: Advanced environment-specific rules with --env-rules option
 - **JSON Output**: Programmatic usage with JSON output
 
 ### 2. Custom Rules

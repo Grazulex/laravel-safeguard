@@ -203,7 +203,7 @@ memory_limit = 512M
 
 2. **Test individual rules**:
    ```bash
-   php artisan safeguard:test-rule app_key_is_set
+   php artisan safeguard:test-rule app-key-is-set
    ```
 
 3. **Check environment-specific settings**:
@@ -466,7 +466,7 @@ chmod -R 755 bootstrap/cache/     # Writable for application
 'environments' => [
     'local' => [
         // Only essential rules for development
-        'app_key_is_set',
+        'app-key-is-set',
         'storage_writable',
         // Don't include production-specific rules
     ],

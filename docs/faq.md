@@ -55,7 +55,7 @@ Edit `config/safeguard.php`:
 
 ```php
 'rules' => [
-    'app_key_is_set' => true,           // ✅ Enabled
+    'app-key-is-set' => true,           // ✅ Enabled
     'https_enforced_in_production' => false, // ❌ Disabled
 ],
 ```
@@ -67,12 +67,13 @@ Yes! Use environment-specific configuration:
 ```php
 'environments' => [
     'production' => [
-        'env_debug_false_in_production',
-        'secure_cookies_in_production',
-        'https_enforced_in_production',
+        'app-debug-false-in-production',
+        'app-key-is-set',
+        'env-file-permissions',
+        'database-connection-encrypted',
     ],
     'local' => [
-        'app_key_is_set',
+        'app-key-is-set',
         'storage_writable',
     ],
 ],
@@ -235,7 +236,7 @@ Add them to your configuration:
 ```php
 'rules' => [
     // Built-in rules
-    'app_key_is_set' => true,
+    'app-key-is-set' => true,
     
     // Your custom rules
     'my_custom_rule' => true,
@@ -285,7 +286,7 @@ If artisan commands aren't available:
 
 2. Test individual rules:
    ```bash
-   php artisan safeguard:test-rule app_key_is_set
+   php artisan safeguard:test-rule app-key-is-set
    ```
 
 3. Verify environment-specific settings
@@ -407,10 +408,10 @@ Results aren't cached by default, but you can implement caching in CI/CD:
 **Start with critical rules:**
 ```php
 'rules' => [
-    'app_key_is_set' => true,
-    'env_debug_false_in_production' => true,
-    'csrf_enabled' => true,
-    'no_secrets_in_code' => true,
+    'app-key-is-set' => true,
+    'app-debug-false-in-production' => true,
+    'csrf-enabled' => true,
+    'no-secrets-in-code' => true,
 ],
 ```
 
