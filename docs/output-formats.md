@@ -124,7 +124,7 @@ php artisan safeguard:check --format=json
   },
   "results": [
     {
-      "rule": "app_key_is_set",
+      "rule": "app-key-is-set",
       "description": "Verifies that Laravel application key is generated",
       "status": "passed",
       "message": "APP_KEY is properly configured",
@@ -135,7 +135,7 @@ php artisan safeguard:check --format=json
       }
     },
     {
-      "rule": "env_debug_false_in_production",
+      "rule": "app-debug-false-in-production",
       "description": "Ensures APP_DEBUG is false in production environment",
       "status": "failed",
       "message": "APP_DEBUG is enabled in production environment",
@@ -167,7 +167,7 @@ php artisan safeguard:check --format=json --show-all
   },
   "results": [
     {
-      "rule": "app_key_is_set",
+      "rule": "app-key-is-set",
       "description": "Verifies that Laravel application key is generated",
       "status": "passed",
       "message": "APP_KEY is properly configured",
@@ -181,7 +181,7 @@ php artisan safeguard:check --format=json --show-all
       }
     },
     {
-      "rule": "env_debug_false_in_production", 
+      "rule": "app-debug-false-in-production", 
       "description": "Ensures APP_DEBUG is false in production environment",
       "status": "failed",
       "message": "APP_DEBUG is enabled in production environment",
@@ -195,7 +195,7 @@ php artisan safeguard:check --format=json --show-all
       }
     },
     {
-      "rule": "csrf_enabled",
+      "rule": "csrf-enabled",
       "description": "Ensures CSRF protection is properly configured",
       "status": "passed", 
       "message": "CSRF protection is active",
@@ -267,9 +267,9 @@ php artisan safeguard:check --ci
 
 ### Example Output
 ```
-[PASS] app_key_is_set: APP_KEY is properly configured
-[FAIL] env_debug_false_in_production: APP_DEBUG is enabled in production environment
-[PASS] csrf_enabled: CSRF protection is properly configured
+[PASS] app-key-is-set: APP_KEY is properly configured
+[FAIL] app-debug-false-in-production: APP_DEBUG is enabled in production environment
+[PASS] csrf-enabled: CSRF protection is properly configured
 [WARN] https_enforced_in_production: HTTPS enforcement is disabled
 [PASS] storage_writable: All storage directories are writable
 

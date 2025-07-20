@@ -106,15 +106,25 @@ return [
             'app-key-is-set',
             'env-file-permissions',
             'database-connection-encrypted',
+            'database-credentials-not-default',
             'password-policy-compliance',
             'encryption-key-rotation',
         ],
         'staging' => [
             'app-debug-false-in-production',
+            'app-key-is-set',
             'csrf-enabled',
             'database-connection-encrypted',
         ],
+        'local' => [
+            'app-key-is-set',
+            'env-has-all-required-keys',
+        ],
     ],
+
+    // 🏗️ Custom rules configuration
+    'custom_rules_path' => app_path('SafeguardRules'),
+    'custom_rules_namespace' => 'App\\SafeguardRules',
 
     // 📁 Paths to scan for secrets
     'scan_paths' => [
@@ -122,6 +132,7 @@ return [
         'config/',
         'routes/',
         'resources/views/',
+        'database/seeders/',
     ],
 
     // 🔍 Secret patterns to detect in code
@@ -131,6 +142,22 @@ return [
         '*_TOKEN',
         '*_PASSWORD',
         'API_*',
+        'AWS_*',
+        'STRIPE_*',
+        'PAYPAL_*',
+        'TWILIO_*',
+        'MAILGUN_*',
+    ],
+
+    // ⚙️ Required environment variables
+    'required_env_vars' => [
+        'APP_KEY',
+        'APP_ENV',
+        'APP_DEBUG',
+        'DB_CONNECTION',
+        'DB_HOST',
+        'DB_PORT',
+        'DB_DATABASE',
     ],
 ];
 ```
@@ -151,6 +178,12 @@ Run checks for a specific environment:
 
 ```bash
 php artisan safeguard:check --env=production
+```
+
+Use environment-specific rules only (defined in config):
+
+```bash
+php artisan safeguard:check --env-rules --env=production
 ```
 
 ### <span style="color: #FF9900;">Detailed Output</span>
@@ -203,6 +236,8 @@ With specific severity level:
 ```bash
 php artisan safeguard:make-rule CriticalSecurityRule --severity=error
 ```
+
+Available severity levels: `info`, `warning`, `error`
 
 ## <span style="color: #FF9900;">🔎 Example Output</span>
 
@@ -356,24 +391,31 @@ security_audit:
 
 ## <span style="color: #00B470;">📋 Available Rules</span>
 
-### <span style="color: #FF9900;">🔐 Environment & Secrets</span>
-- `env_debug_false_in_production` — Ensures APP_DEBUG is false in production
-- `env_has_all_required_keys` — Validates all .env.example keys exist in .env
-- `no_secrets_in_code` — Detects hardcoded secrets in your codebase
-- `no_unused_env_keys` — Identifies unused environment variables
-- `no_example_mismatch` — Ensures .env and .env.example are in sync
+### <span style="color: #FF9900;">🔐 Environment & Configuration</span>
+- `app-debug-false-in-production` — Ensures APP_DEBUG is false in production
+- `env-has-all-required-keys` — Validates all .env.example keys exist in .env
+- `app-key-is-set` — Verifies Laravel APP_KEY is generated
+- `no-secrets-in-code` — Detects hardcoded secrets in your codebase
 
-### <span style="color: #D2D200;">⚙️ Application Configuration</span>
-- `app_key_is_set` — Verifies Laravel APP_KEY is generated
-- `no_test_routes_in_production` — Prevents test routes in production
-- `storage_writable` — Checks storage directories are writable
+### <span style="color: #D2D200;">🛡️ Security Rules</span>
+- `csrf-enabled` — Ensures CSRF protection is active
+- `composer-package-security` — Scans for known security vulnerabilities in packages
 
-### <span style="color: #88C600;">🛡️ Laravel Security</span>
-- `csrf_enabled` — Ensures CSRF protection is active
-- `secure_cookies_in_production` — Validates secure cookie settings
-- `session_secure_in_production` — Checks session security configuration
-- `https_enforced_in_production` — Verifies HTTPS enforcement
-- `no_forgotten_admin_routes` — Detects potentially dangerous admin routes
+### <span style="color: #88C600;">🗄️ Database Security</span>
+- `database-connection-encrypted` — Ensures database connections use encryption (SSL/TLS)
+- `database-credentials-not-default` — Validates database credentials are not default values
+- `database-backup-security` — Checks backup security configurations
+- `database-query-logging` — Monitors database query logging settings
+
+### <span style="color: #00B470;">🔑 Authentication Security</span>
+- `password-policy-compliance` — Validates password policy meets security standards
+- `two-factor-auth-enabled` — Verifies two-factor authentication configuration
+- `session-security-settings` — Checks session security configuration
+
+### <span style="color: #FF9900;">🔒 Encryption & File Security</span>
+- `encryption-key-rotation` — Monitors encryption key rotation policies
+- `sensitive-data-encryption` — Ensures sensitive data is properly encrypted
+- `env-file-permissions` — Validates .env file permissions are secure
 
 ## <span style="color: #FF9900;">🔨 Custom Rules</span>
 

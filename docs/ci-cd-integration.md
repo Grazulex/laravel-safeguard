@@ -578,12 +578,12 @@ Start with warnings, then gradually increase severity:
 ```php
 // Week 1: Warnings only
 'rules' => [
-    'env_debug_false_in_production' => true, // Warning level
+    'app-debug-false-in-production' => true, // Warning level
 ],
 
 // Week 2: Upgrade to errors
 'rules' => [
-    'env_debug_false_in_production' => true, // Error level
+    'app-debug-false-in-production' => true, // Error level
 ],
 
 // Week 3: Block deployment on failures

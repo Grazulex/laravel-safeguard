@@ -379,8 +379,8 @@ Add your custom rule to the configuration:
 // config/safeguard.php
 'rules' => [
     // Built-in rules
-    'app_key_is_set' => true,
-    'csrf_enabled' => true,
+    'app-key-is-set' => true,
+    'csrf-enabled' => true,
     
     // Your custom rules
     'database_security_check' => true,

@@ -22,7 +22,7 @@ echo "   Rule created successfully.\n";
 echo "   Don't forget to register your rule in a service provider or configure it in config/safeguard.php\n";
 echo "   ---\n\n";
 
-echo "   Generated file: app/Safeguard/Rules/CustomSecurityRule.php\n";
+echo "   Generated file: app/SafeguardRules/CustomSecurityRule.php\n";
 echo "   Default severity: info\n\n";
 
 echo "2. Create a rule with warning severity:\n";
@@ -41,7 +41,7 @@ echo "   <?php\n";
 echo "   \n";
 echo "   declare(strict_types=1);\n";
 echo "   \n";
-echo "   namespace App\\Safeguard\\Rules;\n";
+echo "   namespace App\\SafeguardRules;\n";
 echo "   \n";
 echo "   use Grazulex\\LaravelSafeguard\\Contracts\\SafeguardRule;\n";
 echo "   use Grazulex\\LaravelSafeguard\\SafeguardResult;\n";
