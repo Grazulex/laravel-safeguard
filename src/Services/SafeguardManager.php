@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Grazulex\LaravelSafeguard\Services;
 
 use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
+use Grazulex\LaravelSafeguard\SafeguardResult;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use ReflectionClass;
+use Throwable;
 
 class SafeguardManager
 {
@@ -49,13 +51,19 @@ class SafeguardManager
 
             $className = $namespace.'\\'.$file->getFilenameWithoutExtension();
 
-            if (class_exists($className)) {
-                $reflection = new ReflectionClass($className);
+            try {
+                if (class_exists($className)) {
+                    $reflection = new ReflectionClass($className);
 
-                if ($reflection->implementsInterface(SafeguardRule::class) &&
-                    ! $reflection->isAbstract()) {
-                    $this->registerRule(new $className());
+                    if ($reflection->implementsInterface(SafeguardRule::class) &&
+                        ! $reflection->isAbstract()) {
+                        $this->registerRule(new $className());
+                    }
                 }
+            } catch (Throwable $e) {
+                // Log l'erreur mais continue le chargement des autres règles
+                // On pourrait utiliser un logger ici si disponible
+                continue;
             }
         }
 
@@ -119,12 +127,28 @@ class SafeguardManager
         $rulesToRun = $this->getEnabledRules();
 
         return $rulesToRun->map(function (SafeguardRule $rule): array {
-            return [
-                'rule' => $rule->id(),
-                'description' => $rule->description(),
-                'severity' => $rule->severity(),
-                'result' => $rule->check(),
-            ];
+            try {
+                $result = $rule->check();
+
+                return [
+                    'rule' => $rule->id(),
+                    'description' => $rule->description(),
+                    'severity' => $rule->severity(),
+                    'result' => $result,
+                ];
+            } catch (Throwable $e) {
+                // En cas d'erreur lors de l'exécution d'une règle, créer un résultat d'échec
+                return [
+                    'rule' => $rule->id(),
+                    'description' => $rule->description(),
+                    'severity' => 'error',
+                    'result' => SafeguardResult::fail(
+                        "Rule execution failed: {$e->getMessage()}",
+                        'error',
+                        ['error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]
+                    ),
+                ];
+            }
         });
     }
 
@@ -136,12 +160,28 @@ class SafeguardManager
         $rulesToRun = $this->getRulesForEnvironment($environment);
 
         return $rulesToRun->map(function (SafeguardRule $rule): array {
-            return [
-                'rule' => $rule->id(),
-                'description' => $rule->description(),
-                'severity' => $rule->severity(),
-                'result' => $rule->check(),
-            ];
+            try {
+                $result = $rule->check();
+
+                return [
+                    'rule' => $rule->id(),
+                    'description' => $rule->description(),
+                    'severity' => $rule->severity(),
+                    'result' => $result,
+                ];
+            } catch (Throwable $e) {
+                // En cas d'erreur lors de l'exécution d'une règle, créer un résultat d'échec
+                return [
+                    'rule' => $rule->id(),
+                    'description' => $rule->description(),
+                    'severity' => 'error',
+                    'result' => SafeguardResult::fail(
+                        "Rule execution failed: {$e->getMessage()}",
+                        'error',
+                        ['error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]
+                    ),
+                ];
+            }
         });
     }
 }
