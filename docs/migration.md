@@ -203,8 +203,8 @@ $migrations = [
     'csrf-enabled' => 'csrf-enabled',
     'no-secrets-in-code' => 'no-secrets-in-code',
     'env-has-all-required-keys' => 'env-has-all-required-keys',
-    'env_file_permissions' => 'env-file-permissions',
-    'composer_package_security' => 'composer-package-security',
+    'env-file-permissions' => 'env-file-permissions',
+    'composer-package-security' => 'composer-package-security',
 ];
 
 foreach ($migrations as $old => $new) {
@@ -297,13 +297,13 @@ return [
         'env-has-all-required-keys' => true,
         'no-secrets-in-code' => true,
         'csrf-enabled' => true,
-        'env_file_permissions' => true,
+        'env-file-permissions' => true,
     ],
     'environments' => [
         'production' => [
             'app-debug-false-in-production',
             'app-key-is-set',
-            'env_file_permissions',
+            'env-file-permissions',
         ],
     ],
     'scan_paths' => [

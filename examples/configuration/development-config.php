@@ -29,10 +29,10 @@ return [
         'env_debug_false_in_production' => false, // Allow debug in development
         'secure_cookies_in_production' => false,  // Not needed in development
         'https_enforced_in_production' => false,  // Not needed in development
-        'env_file_permissions' => false,          // Relaxed for development
+        'env-file-permissions' => false,          // Relaxed for development
 
         // Optional checks (can be enabled/disabled based on preference)
-        'env_has_all_required_keys' => true,      // Helps catch missing vars
+        'env-has-all-required-keys' => true,      // Helps catch missing vars
         'no_secrets_in_code' => true,             // Good practice even in dev
         'sensitive_files_hidden' => false,        // Not critical in development
 
@@ -54,14 +54,14 @@ return [
         'local' => [
             'app_key_is_set',
             'storage_writable',
-            'env_has_all_required_keys',
+            'env-has-all-required-keys',
         ],
 
         'development' => [
             'app_key_is_set',
             'storage_writable',
             'csrf_enabled',
-            'env_has_all_required_keys',
+            'env-has-all-required-keys',
             'no_secrets_in_code',
         ],
 

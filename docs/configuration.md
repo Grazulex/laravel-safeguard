@@ -72,7 +72,7 @@ Configure different rules for different environments:
     ],
     'local' => [
         'app-key-is-set',
-        'storage_writable',
+        'env-has-all-required-keys',
     ],
 ],
 ```
@@ -166,9 +166,9 @@ For a strict production-only security check:
     'app-debug-false-in-production' => true,
     'secure_cookies_in_production' => true,
     'https_enforced_in_production' => true,
-    'env_file_permissions' => true,
+    'env-file-permissions' => true,
     // Disable development-focused rules
-    'storage_writable' => false,
+    'env-has-all-required-keys' => false,
     'no-secrets-in-code' => false,
 ],
 
@@ -177,7 +177,7 @@ For a strict production-only security check:
         'app-debug-false-in-production',
         'secure_cookies_in_production',
         'https_enforced_in_production',
-        'env_file_permissions',
+        'env-file-permissions',
     ],
 ],
 ```
@@ -189,7 +189,7 @@ For development environments with relaxed rules:
 ```php
 'rules' => [
     'app-key-is-set' => true,
-    'storage_writable' => true,
+    'env-has-all-required-keys' => true,
     'csrf-enabled' => true,
     // Disable strict production rules
     'app-debug-false-in-production' => false,
@@ -203,7 +203,7 @@ For continuous integration environments:
 
 ```php
 'rules' => [
-    'env_has_all_required_keys' => true,
+    'env-has-all-required-keys' => true,
     'no-secrets-in-code' => true,
     'app-key-is-set' => true,
     // Disable environment-specific rules
