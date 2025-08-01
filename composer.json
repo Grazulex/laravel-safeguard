@@ -67,7 +67,8 @@
         "issues": "https://github.com/Grazulex/laravel-safeguard/issues",
         "source": "https://github.com/Grazulex/laravel-safeguard",
         "forum": "https://github.com/Grazulex/laravel-safeguard/discussions",
-        "docs": "https://github.com/Grazulex/laravel-safeguard#readme"
+        "docs": "https://github.com/Grazulex/laravel-safeguard/wiki",
+        "wiki": "https://github.com/Grazulex/laravel-safeguard/wiki"
     },
     "scripts": {
         "test": [

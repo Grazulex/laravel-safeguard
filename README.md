@@ -271,11 +271,11 @@ return [
 
 For detailed documentation, examples, and advanced usage:
 
-- 📚 [Full Documentation](docs/README.md)
-- 🎯 [Examples](examples/README.md)
-- 🔧 [Configuration](docs/configuration.md)
-- 🧪 [Testing](docs/testing.md)
-- 🚨 [Threat Detection](docs/threat-detection.md)
+- 📚 [Full Documentation](https://github.com/Grazulex/laravel-safeguard/wiki)
+- 🎯 [Examples](https://github.com/Grazulex/laravel-safeguard/wiki/Examples)
+- 🔧 [Configuration](https://github.com/Grazulex/laravel-safeguard/wiki/Configuration)
+- 🧪 [Testing](https://github.com/Grazulex/laravel-safeguard/wiki/Testing)
+- 🚨 [Threat Detection](https://github.com/Grazulex/laravel-safeguard/wiki/Threat-Detection)
 
 ## 💡 Examples
 
@@ -326,7 +326,7 @@ Safeguard::events()->listen('threat_detected', function ($threat) {
 });
 ```
 
-Check out the [examples directory](examples) for more examples.
+Check out the [examples on the wiki](https://github.com/Grazulex/laravel-safeguard/wiki/Examples) for more examples.
 
 ## 🧪 Testing
 
@@ -385,7 +385,7 @@ Laravel Safeguard is open-sourced software licensed under the [MIT license](LICE
 
 ### Resources
 
-- [📖 Documentation](docs/README.md)
+- [📖 Documentation](https://github.com/Grazulex/laravel-safeguard/wiki)
 - [💬 Discussions](https://github.com/Grazulex/laravel-safeguard/discussions)
 - [🐛 Issue Tracker](https://github.com/Grazulex/laravel-safeguard/issues)
 - [📦 Packagist](https://packagist.org/packages/grazulex/laravel-safeguard)
