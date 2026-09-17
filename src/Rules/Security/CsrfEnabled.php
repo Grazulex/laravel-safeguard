@@ -23,13 +23,10 @@ class CsrfEnabled extends AbstractSafeguardRule
 
     public function check(): SafeguardResult
     {
-        // Check if CSRF protection is enabled by examining middleware configuration
-        $webMiddleware = config('app.middleware_groups.web', []);
-        $laravelCsrfMiddleware = \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class;
+        $webMiddleware = $this->webMiddleware();
 
-        $hasCsrf = in_array($laravelCsrfMiddleware, $webMiddleware) ||
-                   in_array('csrf', $webMiddleware) ||
-                   $this->hasCustomCsrfMiddleware($webMiddleware);
+        $hasCsrf = in_array('csrf', $webMiddleware, true)
+            || $this->hasCsrfMiddleware($webMiddleware);
 
         if (! $hasCsrf) {
             return SafeguardResult::fail(
@@ -62,21 +59,57 @@ class CsrfEnabled extends AbstractSafeguardRule
     }
 
     /**
-     * Check if there's a custom CSRF middleware that extends the base VerifyCsrfToken
+     * Resolve the "web" middleware group from the router, falling back to config.
+     *
+     * @return array<int, string>
      */
-    private function hasCustomCsrfMiddleware(array $middleware): bool
+    private function webMiddleware(): array
     {
+        $groups = app()->bound('router') ? app('router')->getMiddlewareGroups() : [];
+        $web = $groups['web'] ?? config('app.middleware_groups.web', []);
+
+        return array_values(array_filter($web, fn ($middleware): bool => is_string($middleware)));
+    }
+
+    /**
+     * Laravel's CSRF middleware classes: PreventRequestForgery (Laravel 13+) and
+     * VerifyCsrfToken (Laravel <= 12, kept as a deprecated alias in 13).
+     *
+     * @return array<int, class-string>
+     */
+    private function csrfMiddlewareClasses(): array
+    {
+        return array_values(array_filter([
+            'Illuminate\Foundation\Http\Middleware\PreventRequestForgery',
+            'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken',
+        ], 'class_exists'));
+    }
+
+    /**
+     * Check whether the group contains Laravel's CSRF middleware or a subclass of it.
+     */
+    private function hasCsrfMiddleware(array $middleware): bool
+    {
+        $csrfClasses = $this->csrfMiddlewareClasses();
+
         foreach ($middleware as $middlewareClass) {
-            if (is_string($middlewareClass) && class_exists($middlewareClass)) {
-                try {
-                    $reflection = new ReflectionClass($middlewareClass);
-                    if ($reflection->isSubclassOf(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class)) {
+            if (in_array($middlewareClass, $csrfClasses, true)) {
+                return true;
+            }
+
+            if (! class_exists($middlewareClass)) {
+                continue;
+            }
+
+            try {
+                $reflection = new ReflectionClass($middlewareClass);
+                foreach ($csrfClasses as $csrfClass) {
+                    if ($reflection->isSubclassOf($csrfClass)) {
                         return true;
                     }
-                } catch (ReflectionException $e) {
-                    // Skip invalid classes
-                    continue;
                 }
+            } catch (ReflectionException) {
+                continue;
             }
         }
 
