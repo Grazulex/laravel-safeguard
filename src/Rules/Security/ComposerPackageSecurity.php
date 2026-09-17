@@ -224,7 +224,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
             }
         }
 
-        if (array_filter($issues, fn ($issue): bool => $issue['type'] === 'very_outdated_package') !== []) {
+        if (array_filter($issues, fn (array $issue): bool => $issue['type'] === 'very_outdated_package') !== []) {
             $recommendations[] = 'Review and update packages that haven\'t been updated in over 2 years';
             $recommendations[] = 'Consider finding alternative packages for very outdated dependencies';
         }
@@ -248,7 +248,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
             }
         }
 
-        if (array_filter($issues, fn ($issue): bool => $issue['type'] === 'abandoned_package') !== []) {
+        if (array_filter($issues, fn (array $issue): bool => $issue['type'] === 'abandoned_package') !== []) {
             $recommendations[] = 'Replace abandoned packages with maintained alternatives';
             $recommendations[] = 'Fork abandoned packages if no alternatives exist and they are critical';
         }
@@ -257,7 +257,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
     private function checkDevPackagesInProduction(array $packages, array &$issues, array &$recommendations, array &$packageAudit): void
     {
         if (app()->environment('production')) {
-            $devPackages = array_filter($packages, fn ($package): bool => $package['type'] === 'development');
+            $devPackages = array_filter($packages, fn (array $package): bool => $package['type'] === 'development');
 
             if ($devPackages !== []) {
                 $issues[] = [
@@ -369,7 +369,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
 
     private function getTimeSinceLastUpdate(?string $updateTime): int
     {
-        if ($updateTime === null || $updateTime === '' || $updateTime === '0') {
+        if (in_array($updateTime, [null, '', '0'], true)) {
             return 9999; // Very old if no time available
         }
 

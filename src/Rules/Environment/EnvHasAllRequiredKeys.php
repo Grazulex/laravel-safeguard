@@ -29,7 +29,7 @@ class EnvHasAllRequiredKeys extends AbstractSafeguardRule
             $configKey = $this->getConfigKey($var);
             if ($configKey && config($configKey) === null) {
                 $missingVars[] = $var;
-            } elseif ($configKey === null || $configKey === '' || $configKey === '0') {
+            } elseif (in_array($configKey, [null, '', '0'], true)) {
                 // For variables not mapped to config, check if they exist in $_ENV
                 if (! isset($_ENV[$var]) || $_ENV[$var] === '') {
                     $missingVars[] = $var;

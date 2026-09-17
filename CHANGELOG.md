@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Applied Rector (code quality / type declarations): repeated strict comparisons collapsed into `in_array(..., true)`, and explicit parameter/return types added to arrow functions. No behaviour change.
+- GitHub Actions: `actions/checkout` bumped to v5 and `softprops/action-gh-release` to v2.
+
 ## [v1.4.0] - 2026-09-17
 
 ### Added
