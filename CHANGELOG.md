@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.4.1] - 2026-09-17
+
+### Fixed
+- `csrf-enabled` rule: the check now inspects the router's real `web` middleware group instead of a non-existent `app.middleware_groups.web` config key, and recognises Laravel 13's `PreventRequestForgery` middleware (as well as `VerifyCsrfToken` and any subclass). Previously the rule reported "CSRF protection is disabled" on every Laravel 13 application.
+
 ### Changed
 - Applied Rector (code quality / type declarations): repeated strict comparisons collapsed into `in_array(..., true)`, and explicit parameter/return types added to arrow functions. No behaviour change.
 - GitHub Actions: `actions/checkout` bumped to v5 and `softprops/action-gh-release` to v2.
