@@ -48,7 +48,7 @@ abstract class AbstractSafeguardRule implements SafeguardRule
                 foreach ($value as $item) {
                     if (is_array($item)) {
                         $lines = array_merge($lines, $this->formatArrayItem($item));
-                    } elseif ($item !== '' && $item !== null && $item !== 0) {
+                    } elseif (! in_array($item, ['', null, 0], true)) {
                         // Skip empty or meaningless values
                         $lines[] = "     • {$item}";
                     }
@@ -133,7 +133,7 @@ abstract class AbstractSafeguardRule implements SafeguardRule
      */
     protected function isEmpty($value): bool
     {
-        if ($value === null || $value === '' || $value === [] || $value === false) {
+        if (in_array($value, [null, '', [], false], true)) {
             return true;
         }
 

@@ -28,7 +28,7 @@ class SafeguardListCommand extends Command
         $severity = $this->option('severity');
 
         if ($this->option('enabled')) {
-            $rules = $rules->filter(fn ($rule) => $config[$rule->id()] ?? false);
+            $rules = $rules->filter(fn ($rule): mixed => $config[$rule->id()] ?? false);
         } elseif ($this->option('disabled')) {
             $rules = $rules->filter(fn ($rule): bool => ! ($config[$rule->id()] ?? false));
         }
@@ -79,7 +79,7 @@ class SafeguardListCommand extends Command
     {
         $headers = ['Rule ID', 'Description', 'Severity', 'Status'];
 
-        if ($environment !== null && $environment !== '' && $environment !== '0') {
+        if (! in_array($environment, [null, '', '0'], true)) {
             $headers[] = "Applies to {$environment}";
         }
 
@@ -96,7 +96,7 @@ class SafeguardListCommand extends Command
                 $status,
             ];
 
-            if ($environment !== null && $environment !== '' && $environment !== '0') {
+            if (! in_array($environment, [null, '', '0'], true)) {
                 $applies = $rule->appliesToEnvironment($environment);
                 $row[] = $applies ? '<fg=green>Yes</>' : '<fg=yellow>No</>';
             }
