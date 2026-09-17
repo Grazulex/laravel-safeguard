@@ -8,7 +8,7 @@ Comprehensive security auditing and threat detection system for Laravel applicat
 [![Total Downloads](https://img.shields.io/packagist/dt/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
 [![License](https://img.shields.io/github/license/grazulex/laravel-safeguard.svg?style=flat-square)](https://github.com/Grazulex/laravel-safeguard/blob/main/LICENSE.md)
 [![PHP Version](https://img.shields.io/packagist/php-v/grazulex/laravel-safeguard.svg?style=flat-square)](https://php.net/)
-[![Laravel Version](https://img.shields.io/badge/laravel-12.x-ff2d20?style=flat-square&logo=laravel)](https://laravel.com/)
+[![Laravel Version](https://img.shields.io/badge/laravel-12.x%20%7C%2013.x-ff2d20?style=flat-square&logo=laravel)](https://laravel.com/)
 [![Tests](https://img.shields.io/github/actions/workflow/status/grazulex/laravel-safeguard/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/Grazulex/laravel-safeguard/actions)
 [![Code Style](https://img.shields.io/badge/code%20style-pint-000000?style=flat-square&logo=laravel)](https://github.com/laravel/pint)
 
@@ -354,8 +354,8 @@ public function test_rate_limiting()
 
 ## 🔧 Requirements
 
-- PHP: ^8.3
-- Laravel: ^12.0
+- PHP: ^8.3 (8.3 or 8.4)
+- Laravel: ^12.0 | ^13.0
 - Carbon: ^3.10
 
 ## 🚀 Performance
