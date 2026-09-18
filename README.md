@@ -2,6 +2,12 @@
 
 <img src="new_logo.png" alt="Laravel Safeguard" width="200">
 
+> [!TIP]
+> **What Laravel Safeguard does for you** — Continuous security auditing for your Laravel app: real-time threat detection, automated assessments and reports you can hand to a client or an auditor — without assembling a dozen tools yourself.
+>
+> **This package is free and maintained on my own time.** If it saves you hours, a small contribution helps me keep it going:
+> [💖 GitHub Sponsors](https://github.com/sponsors/Grazulex) · [☕ Buy Me a Coffee](https://buymeacoffee.com/grazulex) · [PayPal](https://paypal.me/strauven)
+
 Comprehensive security auditing and threat detection system for Laravel applications. Real-time monitoring, automated security assessments, and detailed security reporting.
 
 [![Latest Version](https://img.shields.io/packagist/v/grazulex/laravel-safeguard.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-safeguard)
@@ -374,6 +380,14 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ## 🔒 Security
 
 If you discover a security vulnerability, please review our [Security Policy](SECURITY.md) before disclosing it.
+
+## 💖 Support This Package
+
+Laravel Safeguard is free, open source and maintained on my own time. If it saves you hours, here is how you can give back:
+
+- ⭐ **Star the repository** — it helps other developers find it
+- 🐦 **Share it** with your team and network
+- 💖 **[Sponsor on GitHub](https://github.com/sponsors/Grazulex)**, **[buy me a coffee](https://buymeacoffee.com/grazulex)** or **[donate via PayPal](https://paypal.me/strauven)** — every contribution funds maintenance, new features and Laravel upgrades
 
 ## 📄 License
 
