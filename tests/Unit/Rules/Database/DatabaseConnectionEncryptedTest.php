@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Grazulex\LaravelSafeguard\Rules\Database\DatabaseConnectionEncrypted;
+use Pdo\Mysql;
 
 beforeEach(function () {
     $this->rule = new DatabaseConnectionEncrypted();
@@ -34,7 +35,7 @@ it('passes when mysql connection has SSL configured', function () {
         'database.connections.mysql' => [
             'driver' => 'mysql',
             'options' => [
-                PDO::MYSQL_ATTR_SSL_CA => '/path/to/ca.pem',
+                Mysql::ATTR_SSL_CA => '/path/to/ca.pem',
             ],
         ],
     ]);

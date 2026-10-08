@@ -6,7 +6,7 @@ namespace Grazulex\LaravelSafeguard\Rules\Database;
 
 use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
-use PDO;
+use Pdo\Mysql;
 
 class DatabaseConnectionEncrypted extends AbstractSafeguardRule
 {
@@ -87,11 +87,14 @@ class DatabaseConnectionEncrypted extends AbstractSafeguardRule
     {
         $options = $config['options'] ?? [];
 
-        // Check for SSL options
-        return isset($options[PDO::MYSQL_ATTR_SSL_CA]) ||
-               isset($options[PDO::MYSQL_ATTR_SSL_CERT]) ||
-               isset($options[PDO::MYSQL_ATTR_SSL_KEY]) ||
-               ($config['sslmode'] ?? '') === 'require';
+        // Check for SSL options (Pdo\Mysql is only available with the pdo_mysql extension)
+        $hasSslOption = class_exists(Mysql::class) && (
+            isset($options[Mysql::ATTR_SSL_CA]) ||
+            isset($options[Mysql::ATTR_SSL_CERT]) ||
+            isset($options[Mysql::ATTR_SSL_KEY])
+        );
+
+        return $hasSslOption || ($config['sslmode'] ?? '') === 'require';
     }
 
     private function isPostgresSecure(array $config): bool

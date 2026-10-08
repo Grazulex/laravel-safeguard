@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Grazulex\LaravelSafeguard\Rules\Database\DatabaseQueryLogging;
+use Pdo\Mysql;
 
 beforeEach(function () {
     $this->rule = new DatabaseQueryLogging();
@@ -31,7 +32,7 @@ it('passes in production with proper logging configuration', function () {
 
     config([
         'database.connections.mysql.options' => [
-            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET slow_query_log = 1',
+            Mysql::ATTR_INIT_COMMAND => 'SET slow_query_log = 1',
         ],
     ]);
 
