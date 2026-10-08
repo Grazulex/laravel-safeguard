@@ -360,7 +360,7 @@ public function test_rate_limiting()
 
 ## 🔧 Requirements
 
-- PHP: ^8.3 (8.3 or 8.4)
+- PHP: ^8.4 (8.4 or 8.5)
 - Laravel: ^12.0 | ^13.0
 - Carbon: ^3.10
 
