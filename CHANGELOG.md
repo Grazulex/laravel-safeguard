@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.5.0] - 2026-10-08
+
+### Changed
+- **Minimum PHP version is now 8.4**: PHP 8.3 is no longer supported (#32)
+- CI test matrix now runs PHP 8.4 and 8.5 (#32)
+
+### Fixed
+- `database-connection-encrypted` rule: MySQL SSL options are now read from `Pdo\Mysql::ATTR_SSL_*` (the `PDO::MYSQL_ATTR_*` constants are deprecated since PHP 8.5), and the rule no longer fails with an undefined constant when `pdo_mysql` is not loaded (#32)
+
 ## [v1.4.1] - 2026-09-17
 
 ### Fixed
@@ -40,7 +49,8 @@ Previous release. See the [GitHub releases](https://github.com/Grazulex/laravel-
 
 Previous release. See the [GitHub releases](https://github.com/Grazulex/laravel-safeguard/releases) for details.
 
-[Unreleased]: https://github.com/Grazulex/laravel-safeguard/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/Grazulex/laravel-safeguard/compare/v1.5.0...HEAD
+[v1.5.0]: https://github.com/Grazulex/laravel-safeguard/compare/v1.4.1...v1.5.0
 [v1.4.0]: https://github.com/Grazulex/laravel-safeguard/compare/v1.3.0...v1.4.0
 [v1.3.0]: https://github.com/Grazulex/laravel-safeguard/compare/v1.2.2...v1.3.0
 [v1.2.2]: https://github.com/Grazulex/laravel-safeguard/releases/tag/v1.2.2
