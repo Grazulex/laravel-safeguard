@@ -80,3 +80,80 @@ it('handles empty or missing composer.lock gracefully', function () {
     expect($result)->toBeInstanceOf(Grazulex\LaravelSafeguard\SafeguardResult::class);
     expect($result->details())->toBeArray();
 });
+it('maps composer audit advisories into issue entries', function () {
+    $rule = new ComposerPackageSecurity();
+
+    $audit = [
+        'packages' => [
+            [
+                'name' => 'example/package',
+                'version' => '1.2.3',
+                'latest' => '1.3.0',
+                'advisories' => [
+                    [
+                        'advisoryId' => 'PKSA-0000-0000',
+                        'cve' => 'CVE-2026-1234',
+                        'title' => 'Bad thing happens when parsing crafted input',
+                        'link' => 'https://example.org/advisory',
+                        'affectedVersions' => '>=1.0,<1.2.4',
+                        'severity' => 'medium',
+                    ],
+                ],
+            ],
+            ['name' => 'clean/package', 'version' => '2.0.0', 'advisories' => []],
+        ],
+    ];
+
+    $issues = $rule->mapAdvisoriesToIssues($audit);
+
+    expect($issues)->toHaveCount(1)
+        ->and($issues[0]['type'])->toBe('security_vulnerability')
+        ->and($issues[0]['package'])->toBe('example/package')
+        ->and($issues[0]['version'])->toBe('1.2.3')
+        ->and($issues[0]['cve'])->toBe('CVE-2026-1234')
+        ->and($issues[0]['severity'])->toBe('medium')
+        ->and($issues[0]['fixed_in'])->toBe('1.3.0');
+});
+
+it('returns no advisory issues when composer audit reports none', function () {
+    $rule = new ComposerPackageSecurity();
+
+    expect($rule->mapAdvisoriesToIssues(['packages' => []]))->toBe([]);
+    expect($rule->mapAdvisoriesToIssues([]))->toBe([]);
+});
+
+it('defaults an unknown advisory severity to high', function () {
+    $rule = new ComposerPackageSecurity();
+
+    $issues = $rule->mapAdvisoriesToIssues([
+        'packages' => [
+            ['name' => 'vendor/pkg', 'version' => '1.0.0', 'advisories' => [['title' => 'Untitled advisory']]],
+        ],
+    ]);
+
+    expect($issues)->toHaveCount(1)->and($issues[0]['severity'])->toBe('high');
+});
+
+it('ignores malformed entries in the composer audit payload', function () {
+    $rule = new ComposerPackageSecurity();
+
+    $issues = $rule->mapAdvisoriesToIssues([
+        'packages' => [
+            'not-a-package',
+            ['version' => '1.0.0', 'advisories' => [['title' => 'no name, skipped']]],
+            ['name' => 'ok/pkg', 'version' => '1.0.0', 'advisories' => ['not-an-advisory']],
+        ],
+    ]);
+
+    expect($issues)->toBe([]);
+});
+
+it('runComposerAudit returns null or a decoded payload in the test environment', function () {
+    $rule = new ComposerPackageSecurity();
+    $method = new ReflectionMethod($rule, 'runComposerAudit');
+    $method->setAccessible(true);
+
+    $result = $method->invoke($rule);
+
+    expect($result === null || is_array($result))->toBeTrue();
+});

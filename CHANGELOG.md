@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `composer-package-security` now runs a real `composer audit --format=json` and maps the live advisories into issues; when Composer is unavailable the advisory scan is skipped honestly instead of using the old placeholder dataset (#36)
+
 ## [v1.5.0] - 2026-10-08
 
 ### Changed
