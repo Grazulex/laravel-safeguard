@@ -52,7 +52,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
         }
 
         // Check for security vulnerabilities
-        $this->checkSecurityAdvisories($packages, $issues, $recommendations, $packageAudit);
+        $advisoryScan = $this->checkSecurityAdvisories($packages, $issues, $recommendations, $packageAudit);
 
         // Check for outdated packages
         $this->checkOutdatedPackages($packages, $issues, $recommendations, $packageAudit);
@@ -76,6 +76,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
                     'issues' => $issues,
                     'recommendations' => $recommendations,
                     'package_audit' => $packageAudit,
+                    'advisory_scan' => $advisoryScan,
                     'total_packages' => count($packages),
                     'total_issues' => count($issues),
                 ]
@@ -86,6 +87,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
             'Composer packages appear secure and up-to-date',
             [
                 'package_audit' => $packageAudit,
+                'advisory_scan' => $advisoryScan,
                 'total_packages' => count($packages),
                 'security_level' => $this->getSecurityLevel($packageAudit),
             ]
@@ -103,22 +105,31 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
     }
 
     /**
-     * Map a `composer audit --format=json` payload to issue entries.
+     * Map a `composer audit --locked --format=json` payload to issue entries.
      * Public on purpose so the mapping can be unit-tested without shelling out.
      *
+     * The payload's top-level `advisories` key maps package names to their
+     * advisories; the installed version is NOT part of the audit output, so
+     * it is resolved from the lock file's `$packages` list.
+     *
      * @param  array<string, mixed>  $audit
+     * @param  array<string, array<string, mixed>>  $packages
      * @return list<array<string, mixed>>
      */
-    public function mapAdvisoriesToIssues(array $audit): array
+    public function mapAdvisoriesToIssues(array $audit, array $packages): array
     {
         $issues = [];
 
-        foreach ($audit['packages'] ?? [] as $package) {
-            if (! is_array($package) || ! isset($package['name'])) {
+        foreach ($audit['advisories'] ?? [] as $packageName => $advisories) {
+            if (! is_array($advisories)) {
                 continue;
             }
 
-            foreach ($package['advisories'] ?? [] as $advisory) {
+            $installedVersion = isset($packages[$packageName]['version']) && is_string($packages[$packageName]['version'])
+                ? $packages[$packageName]['version']
+                : 'unknown';
+
+            foreach ($advisories as $advisory) {
                 if (! is_array($advisory)) {
                     continue;
                 }
@@ -127,9 +138,9 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
 
                 $issues[] = [
                     'type' => 'security_vulnerability',
-                    'severity' => $this->normalizeAdvisorySeverity($advisory['severity'] ?? null),
-                    'package' => (string) $package['name'],
-                    'version' => (string) ($package['version'] ?? 'unknown'),
+                    'severity' => $this->normalizeAdvisorySeverity(isset($advisory['severity']) && is_string($advisory['severity']) ? $advisory['severity'] : null),
+                    'package' => (string) $packageName,
+                    'version' => $installedVersion,
                     'vulnerability' => (string) ($advisory['title'] ?? $advisory['advisoryId'] ?? 'Security advisory'),
                     'description' => is_string($cve) && $cve !== ''
                         ? 'Advisory '.$cve.' affects the installed version'
@@ -137,9 +148,6 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
                     'cve' => $cve,
                     'link' => $advisory['link'] ?? null,
                     'affected_versions' => $advisory['affectedVersions'] ?? null,
-                    'fixed_in' => is_string($latest = $package['latest'] ?? null) && $latest !== ''
-                        ? $latest
-                        : null,
                 ];
             }
         }
@@ -148,29 +156,49 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
     }
 
     /**
-     * Run `composer audit --format=json` in the project root and return the
-     * decoded payload. Null when Composer is unavailable or the audit cannot
-     * run - the rule then skips the live advisory scan rather than guessing.
+     * Run `composer audit --locked --format=json` in the project root and
+     * return the decoded payload. Null when the audit itself fails (unexpected
+     * exit code or invalid JSON) - the rule then skips the live advisory scan
+     * rather than guessing.
+     *
+     * Exit codes are a bitmask (Composer 2.4+): 0 = clean, 1 = advisories
+     * found, 2 = abandoned packages found - the JSON payload is valid in all
+     * of those cases, so json_decode is the real gate.
      *
      * @return array<string, mixed>|null
      */
     protected function runComposerAudit(): ?array
     {
         try {
-            $result = Process::timeout(120)->path(base_path())->run('composer audit --format=json --no-interaction');
-        } catch (Throwable $e) {
+            $result = Process::timeout(120)->path(base_path())
+                ->run('composer audit --locked --format=json --no-interaction --no-plugins');
+        } catch (Throwable) {
             return null;
         }
 
-        // 0 = clean, 1 = advisories found (payload still valid JSON);
-        // anything else means Composer itself could not run the audit.
-        if (! in_array($result->exitCode(), [0, 1], true)) {
+        if (! in_array($result->exitCode(), [0, 1, 2, 3], true)) {
             return null;
         }
 
         $payload = json_decode($result->output(), true);
 
         return is_array($payload) ? $payload : null;
+    }
+
+    /**
+     * Whether the Composer binary is available in the project root. Kept
+     * separate from runComposerAudit() so "Composer missing" and "audit
+     * could not run" can be reported as distinct skip reasons.
+     */
+    protected function composerBinaryAvailable(): bool
+    {
+        try {
+            return Process::timeout(30)->path(base_path())
+                ->run('composer --version --no-interaction')
+                ->exitCode() === 0;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     private function checkComposerLockExists(array &$issues): bool
@@ -238,20 +266,28 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
         }
     }
 
-    private function checkSecurityAdvisories(array $packages, array &$issues, array &$recommendations, array &$packageAudit): void
+    /**
+     * Runs the live advisory scan and returns a human-readable status for the
+     * result details. The status lives in the result's `advisory_scan` key -
+     * `package_audit` stays keyed by package name only.
+     */
+    private function checkSecurityAdvisories(array $packages, array &$issues, array &$recommendations, array &$packageAudit): string
     {
+        if (! $this->composerBinaryAvailable()) {
+            $recommendations[] = 'Install Composer and keep it on PATH so this rule can run a live security advisory audit';
+
+            return 'skipped (composer not available)';
+        }
+
         $audit = $this->runComposerAudit();
 
         if ($audit === null) {
-            // Composer unavailable: skip the live advisory scan honestly
-            // instead of falling back to a hardcoded example dataset (#36).
-            $packageAudit['advisory_scan'] = 'skipped (composer not available)';
-            $recommendations[] = 'Install Composer and keep it on PATH so this rule can run a live security advisory audit';
+            $recommendations[] = 'Ensure `composer audit --locked --format=json` runs in the project root (run it manually to see the failure)';
 
-            return;
+            return 'skipped (composer audit could not run)';
         }
 
-        $advisoryIssues = $this->mapAdvisoriesToIssues($audit);
+        $advisoryIssues = $this->mapAdvisoriesToIssues($audit, $packages);
 
         foreach ($advisoryIssues as $issue) {
             $issues[] = $issue;
@@ -261,13 +297,15 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
                 'cve' => $issue['cve'],
                 'severity' => $issue['severity'],
                 'link' => $issue['link'],
-                'fixed_in' => $issue['fixed_in'],
+                'affected_versions' => $issue['affected_versions'],
             ];
         }
 
         if ($advisoryIssues !== []) {
-            $recommendations[] = 'Update vulnerable packages to their latest secure versions (composer update)';
+            $recommendations[] = 'Update vulnerable packages to a version outside the affected ranges (composer update)';
         }
+
+        return 'completed';
     }
 
     private function normalizeAdvisorySeverity(?string $severity): string
