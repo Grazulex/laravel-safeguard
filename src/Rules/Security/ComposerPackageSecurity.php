@@ -9,6 +9,8 @@ use Exception;
 use Grazulex\LaravelSafeguard\Rules\AbstractSafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Process;
+use Throwable;
 
 class ComposerPackageSecurity extends AbstractSafeguardRule
 {
@@ -50,7 +52,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
         }
 
         // Check for security vulnerabilities
-        $this->checkSecurityAdvisories($packages, $issues, $recommendations, $packageAudit);
+        $advisoryScan = $this->checkSecurityAdvisories($packages, $issues, $recommendations, $packageAudit);
 
         // Check for outdated packages
         $this->checkOutdatedPackages($packages, $issues, $recommendations, $packageAudit);
@@ -74,6 +76,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
                     'issues' => $issues,
                     'recommendations' => $recommendations,
                     'package_audit' => $packageAudit,
+                    'advisory_scan' => $advisoryScan,
                     'total_packages' => count($packages),
                     'total_issues' => count($issues),
                 ]
@@ -84,6 +87,7 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
             'Composer packages appear secure and up-to-date',
             [
                 'package_audit' => $packageAudit,
+                'advisory_scan' => $advisoryScan,
                 'total_packages' => count($packages),
                 'security_level' => $this->getSecurityLevel($packageAudit),
             ]
@@ -98,6 +102,103 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
     public function appliesToEnvironment(string $environment): bool
     {
         return true; // Applies to all environments
+    }
+
+    /**
+     * Map a `composer audit --locked --format=json` payload to issue entries.
+     * Public on purpose so the mapping can be unit-tested without shelling out.
+     *
+     * The payload's top-level `advisories` key maps package names to their
+     * advisories; the installed version is NOT part of the audit output, so
+     * it is resolved from the lock file's `$packages` list.
+     *
+     * @param  array<string, mixed>  $audit
+     * @param  array<string, array<string, mixed>>  $packages
+     * @return list<array<string, mixed>>
+     */
+    public function mapAdvisoriesToIssues(array $audit, array $packages): array
+    {
+        $issues = [];
+
+        foreach ($audit['advisories'] ?? [] as $packageName => $advisories) {
+            if (! is_array($advisories)) {
+                continue;
+            }
+
+            $installedVersion = isset($packages[$packageName]['version']) && is_string($packages[$packageName]['version'])
+                ? $packages[$packageName]['version']
+                : 'unknown';
+
+            foreach ($advisories as $advisory) {
+                if (! is_array($advisory)) {
+                    continue;
+                }
+
+                $cve = $advisory['cve'] ?? null;
+
+                $issues[] = [
+                    'type' => 'security_vulnerability',
+                    'severity' => $this->normalizeAdvisorySeverity(isset($advisory['severity']) && is_string($advisory['severity']) ? $advisory['severity'] : null),
+                    'package' => (string) $packageName,
+                    'version' => $installedVersion,
+                    'vulnerability' => (string) ($advisory['title'] ?? $advisory['advisoryId'] ?? 'Security advisory'),
+                    'description' => is_string($cve) && $cve !== ''
+                        ? 'Advisory '.$cve.' affects the installed version'
+                        : 'Composer security advisory affects the installed version',
+                    'cve' => $cve,
+                    'link' => $advisory['link'] ?? null,
+                    'affected_versions' => $advisory['affectedVersions'] ?? null,
+                ];
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Run `composer audit --locked --format=json` in the project root and
+     * return the decoded payload. Null when the audit itself fails (unexpected
+     * exit code or invalid JSON) - the rule then skips the live advisory scan
+     * rather than guessing.
+     *
+     * Exit codes are a bitmask (Composer 2.4+): 0 = clean, 1 = advisories
+     * found, 2 = abandoned packages found - the JSON payload is valid in all
+     * of those cases, so json_decode is the real gate.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function runComposerAudit(): ?array
+    {
+        try {
+            $result = Process::timeout(120)->path(base_path())
+                ->run('composer audit --locked --format=json --no-interaction --no-plugins');
+        } catch (Throwable) {
+            return null;
+        }
+
+        if (! in_array($result->exitCode(), [0, 1, 2, 3], true)) {
+            return null;
+        }
+
+        $payload = json_decode($result->output(), true);
+
+        return is_array($payload) ? $payload : null;
+    }
+
+    /**
+     * Whether the Composer binary is available in the project root. Kept
+     * separate from runComposerAudit() so "Composer missing" and "audit
+     * could not run" can be reported as distinct skip reasons.
+     */
+    protected function composerBinaryAvailable(): bool
+    {
+        try {
+            return Process::timeout(30)->path(base_path())
+                ->run('composer --version --no-interaction')
+                ->exitCode() === 0;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     private function checkComposerLockExists(array &$issues): bool
@@ -165,36 +266,51 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
         }
     }
 
-    private function checkSecurityAdvisories(array $packages, array &$issues, array &$recommendations, array &$packageAudit): void
+    /**
+     * Runs the live advisory scan and returns a human-readable status for the
+     * result details. The status lives in the result's `advisory_scan` key -
+     * `package_audit` stays keyed by package name only.
+     */
+    private function checkSecurityAdvisories(array $packages, array &$issues, array &$recommendations, array &$packageAudit): string
     {
-        // Check against known security advisories
-        $knownVulnerabilities = $this->getKnownVulnerabilities();
+        if (! $this->composerBinaryAvailable()) {
+            $recommendations[] = 'Install Composer and keep it on PATH so this rule can run a live security advisory audit';
 
-        foreach ($packages as $name => $package) {
-            if (isset($knownVulnerabilities[$name])) {
-                foreach ($knownVulnerabilities[$name] as $vulnerability) {
-                    if ($this->isVersionAffected($package['version'], $vulnerability['affected_versions'])) {
-                        $issues[] = [
-                            'type' => 'security_vulnerability',
-                            'severity' => $vulnerability['severity'] ?? 'high',
-                            'package' => $name,
-                            'version' => $package['version'],
-                            'vulnerability' => $vulnerability['title'],
-                            'description' => $vulnerability['description'],
-                            'cve' => $vulnerability['cve'] ?? null,
-                            'fixed_in' => $vulnerability['fixed_in'] ?? null,
-                        ];
-
-                        $packageAudit[$name]['vulnerabilities'][] = $vulnerability;
-                    }
-                }
-            }
+            return 'skipped (composer not available)';
         }
 
-        if ($issues !== []) {
-            $recommendations[] = 'Update vulnerable packages to their latest secure versions';
-            $recommendations[] = 'Run composer audit to check for additional security advisories';
+        $audit = $this->runComposerAudit();
+
+        if ($audit === null) {
+            $recommendations[] = 'Ensure `composer audit --locked --format=json` runs in the project root (run it manually to see the failure)';
+
+            return 'skipped (composer audit could not run)';
         }
+
+        $advisoryIssues = $this->mapAdvisoriesToIssues($audit, $packages);
+
+        foreach ($advisoryIssues as $issue) {
+            $issues[] = $issue;
+
+            $packageAudit[$issue['package']]['vulnerabilities'][] = [
+                'title' => $issue['vulnerability'],
+                'cve' => $issue['cve'],
+                'severity' => $issue['severity'],
+                'link' => $issue['link'],
+                'affected_versions' => $issue['affected_versions'],
+            ];
+        }
+
+        if ($advisoryIssues !== []) {
+            $recommendations[] = 'Update vulnerable packages to a version outside the affected ranges (composer update)';
+        }
+
+        return 'completed';
+    }
+
+    private function normalizeAdvisorySeverity(?string $severity): string
+    {
+        return in_array($severity, ['critical', 'high', 'medium', 'low'], true) ? $severity : 'high';
     }
 
     private function checkOutdatedPackages(array $packages, array &$issues, array &$recommendations, array &$packageAudit): void
@@ -302,69 +418,6 @@ class ComposerPackageSecurity extends AbstractSafeguardRule
                 $packageAudit['laravel/framework']['version_info'] = $versionInfo;
             }
         }
-    }
-
-    private function getKnownVulnerabilities(): array
-    {
-        // In a real implementation, this would fetch from security advisories API
-        // For now, return some common known vulnerabilities as examples
-        return [
-            'symfony/http-kernel' => [
-                [
-                    'title' => 'HTTP Header Injection',
-                    'description' => 'Possible HTTP header injection when using user input in response headers',
-                    'affected_versions' => ['<4.4.13', '>=5.0,<5.1.5'],
-                    'fixed_in' => ['4.4.13', '5.1.5'],
-                    'severity' => 'high',
-                    'cve' => 'CVE-2020-15094',
-                ],
-            ],
-            'symfony/mime' => [
-                [
-                    'title' => 'CSV injection',
-                    'description' => 'CSV injection in EmailMimeMessage',
-                    'affected_versions' => ['>=4.4.0,<4.4.7', '>=5.0.0,<5.0.7'],
-                    'fixed_in' => ['4.4.7', '5.0.7'],
-                    'severity' => 'medium',
-                    'cve' => 'CVE-2020-5255',
-                ],
-            ],
-        ];
-    }
-
-    private function isVersionAffected(string $version, array $affectedVersions): bool
-    {
-        foreach ($affectedVersions as $constraint) {
-            if ($this->versionMatchesConstraint($version, $constraint)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function versionMatchesConstraint(string $version, string $constraint): bool
-    {
-        // Simplified version constraint checking
-        // In a real implementation, use composer/semver for proper version constraint checking
-
-        if (str_starts_with($constraint, '<')) {
-            $targetVersion = mb_ltrim($constraint, '<');
-
-            return version_compare($version, $targetVersion, '<');
-        }
-
-        if (str_starts_with($constraint, '>=')) {
-            $parts = explode(',', $constraint);
-            if (count($parts) === 2) {
-                $minVersion = mb_ltrim($parts[0], '>=');
-                $maxVersion = mb_ltrim($parts[1], '<');
-
-                return version_compare($version, $minVersion, '>=') && version_compare($version, $maxVersion, '<');
-            }
-        }
-
-        return false;
     }
 
     private function getTimeSinceLastUpdate(?string $updateTime): int

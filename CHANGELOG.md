@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `composer-package-security` now runs a real `composer audit --locked --format=json --no-plugins` and maps the live advisories into issues; when Composer is unavailable the advisory scan is skipped honestly instead of using the old placeholder dataset (#36)
+- `composer-package-security` parses the actual audit JSON shape (`advisories` keyed by package name), resolves the installed version from the lock file, tolerates the Composer exit-code bitmask (0-3), distinguishes "Composer missing" from "audit could not run", and reports the advisory-scan status in the result details instead of a string key inside `package_audit` (#36)
+
 ## [v1.5.0] - 2026-10-08
 
 ### Changed
