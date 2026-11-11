@@ -7,9 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.7.0] - 2026-11-11
+
 ### Changed
-- `composer-package-security` now runs a real `composer audit --locked --format=json --no-plugins` and maps the live advisories into issues; when Composer is unavailable the advisory scan is skipped honestly instead of using the old placeholder dataset (#36)
-- `composer-package-security` parses the actual audit JSON shape (`advisories` keyed by package name), resolves the installed version from the lock file, tolerates the Composer exit-code bitmask (0-3), distinguishes "Composer missing" from "audit could not run", and reports the advisory-scan status in the result details instead of a string key inside `package_audit` (#36)
+- `composer-package-security` rule now runs a real `composer audit --locked --format=json --no-interaction --no-plugins` and maps the live advisories (keyed by package name) into issues, instead of checking a hardcoded placeholder dataset of two Symfony advisories. The installed version is resolved from `composer.lock`, and every advisory carries its title, CVE, link, severity and affected version ranges (#36, #43)
+- The Composer exit-code bitmask (0-3) is tolerated, and the advisory scan is skipped with a distinct reason when Composer is missing or when the audit cannot run, rather than reporting made-up results (#43)
+- Result details now include an `advisory_scan` key (`completed`, `skipped (composer not available)` or `skipped (composer audit could not run)`); `package_audit` stays keyed by package name only (#43)
+
+### Removed
+- `fixed_in` is no longer reported for advisories: `composer audit` does not provide it. Use `affected_versions` and `link` instead (#43)
+
+## [v1.6.1] - 2026-11-07
+
+### Changed
+- Dependency floors raised: `pestphp/pest` `^3.8|^4.7|^5.3`, `larastan/larastan` `^3.14` (#42)
+
+## [v1.6.0] - 2026-11-05
+
+### Added
+- Pest 5 support: `pestphp/pest` and `pestphp/pest-plugin-laravel` accept `^5.0` (dev dependencies only) (#41)
+
+## [v1.5.1] - 2026-11-01
+
+### Changed
+- Dependency floors raised: `nesbot/carbon` `^3.15`, `symfony/yaml` `^7.4|^8.1`, plus dev tooling (Pint, Pest, Larastan, Rector, Doctrine DBAL) (#40)
 
 ## [v1.5.0] - 2026-10-08
 
@@ -53,7 +74,11 @@ Previous release. See the [GitHub releases](https://github.com/Grazulex/laravel-
 
 Previous release. See the [GitHub releases](https://github.com/Grazulex/laravel-safeguard/releases) for details.
 
-[Unreleased]: https://github.com/Grazulex/laravel-safeguard/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/Grazulex/laravel-safeguard/compare/v1.7.0...HEAD
+[v1.7.0]: https://github.com/Grazulex/laravel-safeguard/compare/v1.6.1...v1.7.0
+[v1.6.1]: https://github.com/Grazulex/laravel-safeguard/compare/v1.6.0...v1.6.1
+[v1.6.0]: https://github.com/Grazulex/laravel-safeguard/compare/v1.5.1...v1.6.0
+[v1.5.1]: https://github.com/Grazulex/laravel-safeguard/compare/v1.5.0...v1.5.1
 [v1.5.0]: https://github.com/Grazulex/laravel-safeguard/compare/v1.4.1...v1.5.0
 [v1.4.0]: https://github.com/Grazulex/laravel-safeguard/compare/v1.3.0...v1.4.0
 [v1.3.0]: https://github.com/Grazulex/laravel-safeguard/compare/v1.2.2...v1.3.0
