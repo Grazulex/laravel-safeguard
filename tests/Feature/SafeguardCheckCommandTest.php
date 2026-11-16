@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Grazulex\LaravelSafeguard\Console\Commands\SafeguardCheckCommand;
+use Grazulex\LaravelSafeguard\Formatters\AbstractFormatter;
 use Grazulex\LaravelSafeguard\Services\SafeguardManager;
+use Illuminate\Support\Facades\Artisan;
 
 beforeEach(function () {
     $this->manager = app(SafeguardManager::class);
@@ -51,6 +53,52 @@ it('uses CI mode output format', function () {
     $this->artisan(SafeguardCheckCommand::class, ['--ci' => true])
         ->expectsOutputToContain('[PASS]')
         ->assertExitCode(1); // Exit code 1 car il y a des erreurs détectées dans l'environnement de test
+});
+
+it('outputs JSON when --format=json is used', function () {
+    $exitCode = Artisan::call('safeguard:check', ['--format' => 'json']);
+    $decoded = json_decode(Artisan::output(), true);
+    $summary = AbstractFormatter::summarize($this->manager->runChecks());
+
+    expect($decoded)->toBeArray()
+        ->and($decoded['environment'])->toBe('testing')
+        ->and($decoded['summary']['total'])->toBe($summary['total'])
+        ->and($exitCode)->toBe($summary['errors'] > 0 ? 1 : 0);
+});
+
+it('outputs JUnit XML when --format=junit is used', function () {
+    $exitCode = Artisan::call('safeguard:check', ['--format' => 'junit']);
+    $output = Artisan::output();
+    $summary = AbstractFormatter::summarize($this->manager->runChecks());
+
+    expect($output)->toStartWith('<?xml version="1.0" encoding="UTF-8"?>')
+        ->and($output)->not->toContain('Laravel Safeguard Security Check');
+
+    $document = simplexml_load_string($output);
+
+    expect($document)->not->toBeFalse()
+        ->and((string) $document['tests'])->toBe((string) $summary['total'])
+        ->and((string) $document['failures'])->toBe((string) $summary['errors'])
+        ->and((string) $document->testsuite['name'])->toBe('Laravel Safeguard (testing)')
+        ->and($exitCode)->toBe($summary['errors'] > 0 ? 1 : 0);
+});
+
+it('outputs an HTML report when --format=html is used', function () {
+    $exitCode = Artisan::call('safeguard:check', ['--format' => 'html']);
+    $output = Artisan::output();
+    $summary = AbstractFormatter::summarize($this->manager->runChecks());
+
+    expect($output)->toStartWith('<!DOCTYPE html>')
+        ->and($output)->toContain('Laravel Safeguard Security Report')
+        ->and($output)->toContain('Environment: <strong>testing</strong>')
+        ->and($output)->toContain('</html>')
+        ->and($exitCode)->toBe($summary['errors'] > 0 ? 1 : 0);
+});
+
+it('falls back to CLI output for unknown formats', function () {
+    $this->artisan(SafeguardCheckCommand::class, ['--format' => 'unknown'])
+        ->expectsOutputToContain('Laravel Safeguard Security Check')
+        ->assertExitCode(0);
 });
 
 it('runs environment-specific rules only', function () {
