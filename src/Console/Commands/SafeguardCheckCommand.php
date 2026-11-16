@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Console\Commands;
 
+use Grazulex\LaravelSafeguard\Formatters\AbstractFormatter;
+use Grazulex\LaravelSafeguard\Formatters\FormatterInterface;
+use Grazulex\LaravelSafeguard\Formatters\HtmlFormatter;
+use Grazulex\LaravelSafeguard\Formatters\JsonFormatter;
+use Grazulex\LaravelSafeguard\Formatters\JunitFormatter;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Grazulex\LaravelSafeguard\Services\SafeguardManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use JsonException;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SafeguardCheckCommand extends Command
 {
     protected $signature = 'safeguard:check
                             {--env= : Specific environment to check rules for}
-                            {--format=cli : Output format (cli, json)}
+                            {--format=cli : Output format (cli, json, junit, html)}
                             {--fail-on-error : Exit with error code if any rule fails}
                             {--ci : CI-friendly output (no colors, compact)}
                             {--env-rules : Use environment-specific rules only}
@@ -34,8 +40,15 @@ class SafeguardCheckCommand extends Command
             ? $manager->runChecksForEnvironment($environment)
             : $manager->runChecks($environment);
 
-        if ($format === 'json') {
-            return $this->outputJson($results);
+        $formatter = match ($format) {
+            'json' => new JsonFormatter,
+            'junit' => new JunitFormatter,
+            'html' => new HtmlFormatter,
+            default => null,
+        };
+
+        if ($formatter instanceof FormatterInterface) {
+            return $this->outputFormatted($formatter, $results);
         }
 
         if (! $ciMode) {
@@ -103,47 +116,24 @@ class SafeguardCheckCommand extends Command
         return 0;
     }
 
-    private function outputJson(Collection $results): int
+    /**
+     * Render the results with a machine-readable formatter (json, junit, html).
+     * Exits with 1 when errors/critical issues are found; warnings alone do not fail.
+     */
+    private function outputFormatted(FormatterInterface $formatter, Collection $results): int
     {
-        $passed = $results->filter(fn ($check) => $check['result']->passed())->count();
-        $errors = $results->filter(fn ($check): bool => ! $check['result']->passed() && $check['result']->severity() !== 'warning')->count();
-        $warnings = $results->filter(fn ($check): bool => ! $check['result']->passed() && $check['result']->severity() === 'warning')->count();
-
-        $output = [
-            'status' => $errors > 0 ? 'failed' : ($warnings > 0 ? 'warning' : 'passed'),
-            'environment' => app()->environment(),
-            'timestamp' => now()->toISOString(),
-            'summary' => [
-                'total' => $results->count(),
-                'passed' => $passed,
-                'errors' => $errors,
-                'warnings' => $warnings,
-            ],
-            'results' => $results->map(function (array $check): array {
-                return [
-                    'rule' => $check['rule'],
-                    'description' => $check['description'],
-                    'status' => $check['result']->passed() ? 'passed' : 'failed',
-                    'message' => $check['result']->message(),
-                    'severity' => $check['result']->severity(),
-                    'details' => $check['result']->details(),
-                ];
-            })->values()->all(),
-        ];
-
-        // Utiliser des options JSON pour une meilleure lisibilité et compatibilité
-        $json = json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        if ($json === false) {
-            $this->output->writeln('<error>Failed to encode JSON output: '.json_last_error_msg().'</error>', OutputInterface::VERBOSITY_NORMAL);
+        try {
+            $content = $formatter->format($results, app()->environment());
+        } catch (JsonException $e) {
+            $this->output->writeln('<error>Failed to encode JSON output: '.$e->getMessage().'</error>', OutputInterface::VERBOSITY_NORMAL);
 
             return 1;
         }
 
-        $this->line($json);
+        // Raw output: the content must not be interpreted as console style tags
+        $this->output->writeln(mb_rtrim($content, "\n"), OutputInterface::OUTPUT_RAW);
 
-        // Retourner un code d'erreur seulement pour les erreurs/critiques, pas pour les warnings
-        return $errors > 0 ? 1 : 0;
+        return AbstractFormatter::summarize($results)['errors'] > 0 ? 1 : 0;
     }
 
     private function getStatusIcon(bool $passed, string $severity): string
