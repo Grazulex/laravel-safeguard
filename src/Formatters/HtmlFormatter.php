@@ -15,6 +15,7 @@ class HtmlFormatter extends AbstractFormatter
     public function format(Collection $results, string $environment): string
     {
         $summary = self::summarize($results);
+        $baseline = self::baselineSummary($results);
         $status = $this->status($summary);
         $generatedAt = now()->toISOString();
 
@@ -27,7 +28,7 @@ class HtmlFormatter extends AbstractFormatter
                 continue;
             }
 
-            $rows .= $this->row((string) $check['rule'], (string) ($check['description'] ?? ''), $result);
+            $rows .= $this->row((string) $check['rule'], (string) ($check['description'] ?? ''), $result, $check);
         }
 
         if ($rows === '') {
@@ -55,6 +56,7 @@ h1 { margin: 0 0 .25rem; font-size: 1.6rem; }
 .status-passed { color: #1e8e3e; }
 .status-warning { color: #b7791f; }
 .status-failed { color: #c53030; }
+.status-accepted { color: #4a5568; }
 table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 th, td { text-align: left; padding: .75rem 1rem; border-bottom: 1px solid #e4e7eb; vertical-align: top; }
 th { background: #f0f2f5; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: #52606d; }
@@ -63,6 +65,10 @@ tr:last-child td { border-bottom: none; }
 .badge-passed { background: #1e8e3e; }
 .badge-warning { background: #d69e2e; }
 .badge-failed { background: #c53030; }
+.badge-accepted { background: #718096; }
+.baseline { margin-top: .35rem; font-size: .85rem; font-style: italic; }
+.baseline-accepted { color: #4a5568; }
+.baseline-expired { color: #c53030; font-weight: 600; }
 code { font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; font-size: .85rem; }
 .description { color: #616e7c; font-size: .85rem; }
 details { margin-top: .5rem; }
@@ -83,6 +89,8 @@ dd ul { margin: 0; padding-left: 1rem; }
 <div class="card"><div class="value status-passed">{$summary['passed']}</div><div class="label">Passed</div></div>
 <div class="card"><div class="value status-failed">{$summary['errors']}</div><div class="label">Errors</div></div>
 <div class="card"><div class="value status-warning">{$summary['warnings']}</div><div class="label">Warnings</div></div>
+<div class="card"><div class="value status-accepted">{$baseline['accepted']}</div><div class="label">Accepted (baseline)</div></div>
+<div class="card"><div class="value status-failed">{$baseline['expired']}</div><div class="label">Expired exceptions</div></div>
 </section>
 <table>
 <thead><tr><th>Status</th><th>Rule</th><th>Severity</th><th>Message</th></tr></thead>
@@ -96,9 +104,9 @@ dd ul { margin: 0; padding-left: 1rem; }
 HTML;
     }
 
-    private function row(string $rule, string $description, SafeguardResult $result): string
+    private function row(string $rule, string $description, SafeguardResult $result, mixed $check = null): string
     {
-        $status = $this->checkStatus($result);
+        $status = self::isAccepted($check) ? 'accepted' : $this->checkStatus($result);
         $details = $this->detailsAsHtml($result->details());
 
         $ruleCell = '<code>'.$this->escape($rule).'</code>';
@@ -108,6 +116,16 @@ HTML;
         }
 
         $messageCell = $this->escape($result->message());
+
+        $note = $this->baselineNote($check);
+
+        if ($note !== '') {
+            $messageCell .= sprintf(
+                '<div class="baseline baseline-%s">%s</div>',
+                self::isExpired($check) ? 'expired' : 'accepted',
+                $this->escape($note)
+            );
+        }
 
         if ($details !== '') {
             $messageCell .= '<details><summary>Details</summary>'.$details.'</details>';

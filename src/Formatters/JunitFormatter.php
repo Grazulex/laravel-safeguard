@@ -21,6 +21,7 @@ class JunitFormatter extends AbstractFormatter
     public function format(Collection $results, string $environment): string
     {
         $summary = self::summarize($results);
+        $baseline = self::baselineSummary($results);
         $suiteName = self::SUITE_NAME.' ('.$environment.')';
         $classname = 'safeguard.'.$environment;
 
@@ -32,15 +33,18 @@ class JunitFormatter extends AbstractFormatter
             $summary['errors']
         );
         $xml .= sprintf(
-            '  <testsuite name="%s" tests="%d" failures="%d" errors="0" skipped="0" timestamp="%s">'."\n",
+            '  <testsuite name="%s" tests="%d" failures="%d" errors="0" skipped="%d" timestamp="%s">'."\n",
             $this->escape($suiteName),
             $summary['total'],
             $summary['errors'],
+            $baseline['accepted'],
             $this->escape(now()->format('Y-m-d\TH:i:s'))
         );
         $xml .= "    <properties>\n";
         $xml .= sprintf('      <property name="environment" value="%s"/>'."\n", $this->escape($environment));
         $xml .= sprintf('      <property name="warnings" value="%d"/>'."\n", $summary['warnings']);
+        $xml .= sprintf('      <property name="baseline_accepted" value="%d"/>'."\n", $baseline['accepted']);
+        $xml .= sprintf('      <property name="baseline_expired" value="%d"/>'."\n", $baseline['expired']);
         $xml .= "    </properties>\n";
 
         foreach ($results as $check) {
@@ -50,7 +54,7 @@ class JunitFormatter extends AbstractFormatter
                 continue;
             }
 
-            $xml .= $this->testcase((string) $check['rule'], $classname, $result);
+            $xml .= $this->testcase((string) $check['rule'], $classname, $result, $check);
         }
 
         $xml .= "  </testsuite>\n";
@@ -58,7 +62,7 @@ class JunitFormatter extends AbstractFormatter
         return $xml."</testsuites>\n";
     }
 
-    private function testcase(string $rule, string $classname, SafeguardResult $result): string
+    private function testcase(string $rule, string $classname, SafeguardResult $result, mixed $check = null): string
     {
         $open = sprintf(
             '    <testcase name="%s" classname="%s"',
@@ -70,7 +74,23 @@ class JunitFormatter extends AbstractFormatter
             return $open."/>\n";
         }
 
+        $note = $this->baselineNote($check);
+
+        // Accepted findings are reported as skipped: they do not fail the suite.
+        if (self::isAccepted($check)) {
+            $text = '['.$result->severity().'] '.$result->message();
+
+            return $open.">\n"
+                .sprintf('      <skipped message="%s"/>'."\n", $this->escape($note))
+                .'      <system-out>'.$this->escape($text)."</system-out>\n"
+                ."    </testcase>\n";
+        }
+
         $body = $this->detailsAsText($result->details());
+
+        if ($note !== '') {
+            $body = $note.($body !== '' ? "\n".$body : '');
+        }
 
         if ($result->severity() === 'warning') {
             $text = '[warning] '.$result->message().($body !== '' ? "\n".$body : '');

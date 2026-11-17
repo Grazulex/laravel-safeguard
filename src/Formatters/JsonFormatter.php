@@ -21,15 +21,30 @@ class JsonFormatter extends AbstractFormatter
             'environment' => $environment,
             'timestamp' => now()->toISOString(),
             'summary' => $summary,
+            'baseline' => self::baselineSummary($results),
             'results' => $results->map(function (array $check): array {
-                return [
+                $status = $check['result']->passed() ? 'passed' : 'failed';
+
+                if (self::isAccepted($check)) {
+                    $status = 'accepted';
+                }
+
+                $item = [
                     'rule' => $check['rule'],
                     'description' => $check['description'],
-                    'status' => $check['result']->passed() ? 'passed' : 'failed',
+                    'status' => $status,
                     'message' => $check['result']->message(),
                     'severity' => $check['result']->severity(),
                     'details' => $check['result']->details(),
                 ];
+
+                $baseline = self::baselineOf($check);
+
+                if ($baseline !== null) {
+                    $item['baseline'] = $baseline;
+                }
+
+                return $item;
             })->values()->all(),
         ];
 

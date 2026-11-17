@@ -99,6 +99,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Baseline of Accepted Findings
+    |--------------------------------------------------------------------------
+    |
+    | A JSON file listing known findings whose risk is accepted until a given
+    | date: {"accepted": [{"rule": "...", "reason": "...", "expires": "YYYY-MM-DD"}]}
+    |
+    | Accepted findings are still reported but no longer block (exit code 0).
+    | Once the expiry date has passed, the finding is flagged as expired and
+    | blocks again. A missing file simply means "no baseline".
+    |
+    */
+    'baseline' => [
+        'enabled' => true,
+        'path' => base_path('safeguard-baseline.json'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Scan Paths
     |--------------------------------------------------------------------------
     |
