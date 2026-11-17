@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Console\Commands;
 
+use Grazulex\LaravelSafeguard\Baseline\Baseline;
+use Grazulex\LaravelSafeguard\Baseline\BaselineEntry;
+use Grazulex\LaravelSafeguard\Baseline\InvalidBaselineException;
 use Grazulex\LaravelSafeguard\Formatters\AbstractFormatter;
 use Grazulex\LaravelSafeguard\Formatters\FormatterInterface;
 use Grazulex\LaravelSafeguard\Formatters\HtmlFormatter;
@@ -14,6 +17,7 @@ use Grazulex\LaravelSafeguard\Services\SafeguardManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use JsonException;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SafeguardCheckCommand extends Command
@@ -25,7 +29,9 @@ class SafeguardCheckCommand extends Command
                             {--ci : CI-friendly output (no colors, compact)}
                             {--env-rules : Use environment-specific rules only}
                             {--details : Show detailed information for failed checks}
-                            {--show-all : Show detailed information for all checks}';
+                            {--show-all : Show detailed information for all checks}
+                            {--baseline= : Path to a baseline file of accepted findings (defaults to safeguard.baseline.path)}
+                            {--no-baseline : Ignore the baseline file: every finding counts}';
 
     protected $description = 'Run Laravel Safeguard security checks. Use --details to show additional information for failed checks.';
 
@@ -36,9 +42,23 @@ class SafeguardCheckCommand extends Command
         $ciMode = $this->option('ci');
         $useEnvRules = $this->option('env-rules');
 
-        $results = $useEnvRules
-            ? $manager->runChecksForEnvironment($environment)
-            : $manager->runChecks($environment);
+        // Reload the baseline on every run so that file changes are picked up
+        $manager->resetBaseline();
+
+        try {
+            $this->prepareBaseline($manager);
+
+            $results = $useEnvRules
+                ? $manager->runChecksForEnvironment($environment)
+                : $manager->runChecks($environment);
+        } catch (InvalidBaselineException $e) {
+            $this->output->writeln('<error>'.OutputFormatter::escape($e->getMessage()).'</error>', OutputInterface::VERBOSITY_NORMAL);
+
+            return 1;
+        } finally {
+            // Do not leak a --baseline / --no-baseline override to later runs
+            $manager->resetBaseline();
+        }
 
         $formatter = match ($format) {
             'json' => new JsonFormatter,
@@ -58,6 +78,29 @@ class SafeguardCheckCommand extends Command
         return $this->outputCli($results, $ciMode);
     }
 
+    /**
+     * @throws InvalidBaselineException When the baseline file is missing (explicit path) or invalid.
+     */
+    private function prepareBaseline(SafeguardManager $manager): void
+    {
+        if ($this->option('no-baseline')) {
+            $manager->setBaseline(null);
+
+            return;
+        }
+
+        $path = $this->option('baseline');
+
+        if (is_string($path) && $path !== '') {
+            $manager->setBaseline(Baseline::fromFile($path));
+
+            return;
+        }
+
+        // Load the configured baseline now so that an invalid file is reported clearly
+        $manager->getBaseline();
+    }
+
     private function showHeader(): void
     {
         // Force l'output même dans des contextes programmatiques
@@ -73,27 +116,44 @@ class SafeguardCheckCommand extends Command
         $passed = 0;
         $errors = 0; // Erreurs/critiques seulement
         $warnings = 0;
+        $accepted = 0;
+        $expired = 0;
         $showDetails = $this->option('details');
         $showAll = $this->option('show-all');
 
         foreach ($results as $check) {
             $result = $check['result'];
-            $icon = $this->getStatusIcon($result->passed(), $result->severity());
+            $isAccepted = AbstractFormatter::isAccepted($check);
+            $baseline = AbstractFormatter::baselineOf($check);
+            $icon = $isAccepted
+                ? '<fg=blue>☑️</>'
+                : $this->getStatusIcon($result->passed(), $result->severity());
 
             if (! $ciMode) {
                 // Force l'output avec writeIn pour assurer la visibilité
                 $this->output->writeln($icon.' '.$result->message(), OutputInterface::VERBOSITY_NORMAL);
+
+                if ($baseline !== null) {
+                    $this->output->writeln($this->baselineLine($baseline, true), OutputInterface::VERBOSITY_NORMAL);
+                }
 
                 // Show details if requested
                 if (($showDetails && ! $result->passed()) || $showAll) {
                     $this->showResultDetails($result);
                 }
             } else {
-                $status = $result->passed() ? 'PASS' : 'FAIL';
-                $this->output->writeln("[{$status}] {$check['rule']}: {$result->message()}", OutputInterface::VERBOSITY_NORMAL);
+                $status = $result->passed() ? 'PASS' : ($isAccepted ? 'ACCEPTED' : 'FAIL');
+                $suffix = $baseline !== null ? ' ('.OutputFormatter::escape($this->baselineLine($baseline, false)).')' : '';
+                $this->output->writeln("[{$status}] {$check['rule']}: {$result->message()}{$suffix}", OutputInterface::VERBOSITY_NORMAL);
             }
 
-            if ($result->passed()) {
+            if (AbstractFormatter::isExpired($check)) {
+                $expired++;
+            }
+
+            if ($isAccepted) {
+                $accepted++;
+            } elseif ($result->passed()) {
                 $passed++;
             } elseif ($result->severity() === 'warning') {
                 $warnings++;
@@ -104,7 +164,7 @@ class SafeguardCheckCommand extends Command
         }
 
         if (! $ciMode) {
-            $this->showSummary($passed, $errors, $warnings);
+            $this->showSummary($passed, $errors, $warnings, $accepted, $expired);
         }
 
         // En mode CI ou avec --fail-on-error, retourner un code d'erreur si des erreurs/critiques sont détectées
@@ -150,7 +210,29 @@ class SafeguardCheckCommand extends Command
         };
     }
 
-    private function showSummary(int $passed, int $errors, int $warnings): void
+    /**
+     * One-line description of a baseline annotation.
+     *
+     * @param  array{status: string, reason: string, expires: string}  $baseline
+     */
+    private function baselineLine(array $baseline, bool $styled): string
+    {
+        $isExpired = $baseline['status'] === BaselineEntry::STATUS_EXPIRED;
+        $text = $isExpired
+            ? "baseline exception expired on {$baseline['expires']}: {$baseline['reason']}"
+            : "accepted in baseline until {$baseline['expires']}: {$baseline['reason']}";
+
+        if (! $styled) {
+            return $text;
+        }
+
+        // The reason comes from a user file: escape it so it is not read as style tags
+        $text = OutputFormatter::escape(ucfirst($text));
+
+        return $isExpired ? "<fg=red>   ⏰ {$text}</>" : "<fg=blue>   📎 {$text}</>";
+    }
+
+    private function showSummary(int $passed, int $errors, int $warnings, int $accepted = 0, int $expired = 0): void
     {
         $this->line('');
         $this->info('═══════════════════════════════════════');
@@ -168,6 +250,14 @@ class SafeguardCheckCommand extends Command
             } else {
                 $this->comment("   ({$warnings} warnings)");
             }
+        }
+
+        if ($accepted > 0) {
+            $this->comment("📎 {$accepted} accepted findings in baseline");
+        }
+
+        if ($expired > 0) {
+            $this->error("⏰ {$expired} baseline exceptions have expired");
         }
     }
 

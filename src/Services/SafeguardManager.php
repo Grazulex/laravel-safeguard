@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Grazulex\LaravelSafeguard\Services;
 
+use Grazulex\LaravelSafeguard\Baseline\Baseline;
+use Grazulex\LaravelSafeguard\Baseline\InvalidBaselineException;
 use Grazulex\LaravelSafeguard\Contracts\SafeguardRule;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Illuminate\Support\Collection;
@@ -14,6 +16,10 @@ use Throwable;
 class SafeguardManager
 {
     private Collection $rules;
+
+    private ?Baseline $baseline = null;
+
+    private bool $baselineResolved = false;
 
     public function __construct()
     {
@@ -119,14 +125,55 @@ class SafeguardManager
     }
 
     /**
+     * Use a specific baseline of accepted findings (null disables the baseline).
+     */
+    public function setBaseline(?Baseline $baseline): self
+    {
+        $this->baseline = $baseline;
+        $this->baselineResolved = true;
+
+        return $this;
+    }
+
+    /**
+     * Forget the current baseline: it is loaded again from the configuration on next use.
+     */
+    public function resetBaseline(): self
+    {
+        $this->baseline = null;
+        $this->baselineResolved = false;
+
+        return $this;
+    }
+
+    /**
+     * Get the baseline of accepted findings. Unless set explicitly, it is
+     * loaded from the safeguard.baseline configuration on first use.
+     *
+     * @throws InvalidBaselineException When the configured baseline file is invalid.
+     */
+    public function getBaseline(): ?Baseline
+    {
+        if (! $this->baselineResolved) {
+            $this->baseline = Baseline::fromConfig();
+            $this->baselineResolved = true;
+        }
+
+        return $this->baseline;
+    }
+
+    /**
      * Run all enabled rules or rules for specific environment.
+     *
+     * Failed checks covered by the baseline get a "baseline" key
+     * ({status: accepted|expired, reason, expires}).
      */
     public function runChecks(?string $environment = null): Collection
     {
         // Always use enabled rules unless explicitly requested environment filtering
         $rulesToRun = $this->getEnabledRules();
 
-        return $rulesToRun->map(function (SafeguardRule $rule): array {
+        return $this->applyBaseline($rulesToRun->map(function (SafeguardRule $rule): array {
             try {
                 $result = $rule->check();
 
@@ -149,7 +196,7 @@ class SafeguardManager
                     ),
                 ];
             }
-        });
+        }));
     }
 
     /**
@@ -159,7 +206,7 @@ class SafeguardManager
     {
         $rulesToRun = $this->getRulesForEnvironment($environment);
 
-        return $rulesToRun->map(function (SafeguardRule $rule): array {
+        return $this->applyBaseline($rulesToRun->map(function (SafeguardRule $rule): array {
             try {
                 $result = $rule->check();
 
@@ -182,6 +229,13 @@ class SafeguardManager
                     ),
                 ];
             }
-        });
+        }));
+    }
+
+    private function applyBaseline(Collection $results): Collection
+    {
+        $baseline = $this->getBaseline();
+
+        return $baseline instanceof Baseline ? $baseline->apply($results) : $results;
     }
 }
