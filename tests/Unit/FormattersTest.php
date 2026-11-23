@@ -7,6 +7,7 @@ use Grazulex\LaravelSafeguard\Formatters\FormatterInterface;
 use Grazulex\LaravelSafeguard\Formatters\HtmlFormatter;
 use Grazulex\LaravelSafeguard\Formatters\JsonFormatter;
 use Grazulex\LaravelSafeguard\Formatters\JunitFormatter;
+use Grazulex\LaravelSafeguard\Formatters\SarifFormatter;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 
 function formatterSampleResults(): Illuminate\Support\Collection
@@ -42,7 +43,7 @@ function formatterSampleResults(): Illuminate\Support\Collection
 
 it('implements the common formatter interface', function (string $class) {
     expect(new $class)->toBeInstanceOf(FormatterInterface::class);
-})->with([JsonFormatter::class, JunitFormatter::class, HtmlFormatter::class]);
+})->with([JsonFormatter::class, JunitFormatter::class, HtmlFormatter::class, SarifFormatter::class]);
 
 it('summarizes results', function () {
     expect(AbstractFormatter::summarize(formatterSampleResults()))->toBe([
