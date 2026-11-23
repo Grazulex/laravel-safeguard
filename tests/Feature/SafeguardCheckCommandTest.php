@@ -95,6 +95,31 @@ it('outputs an HTML report when --format=html is used', function () {
         ->and($exitCode)->toBe($summary['errors'] > 0 ? 1 : 0);
 });
 
+it('outputs a SARIF log when --format=sarif is used', function () {
+    $exitCode = Artisan::call('safeguard:check', ['--format' => 'sarif']);
+    $output = Artisan::output();
+    $checks = $this->manager->runChecks();
+    $summary = AbstractFormatter::summarize($checks);
+    $failed = $checks->filter(fn (array $check): bool => ! $check['result']->passed())->count();
+
+    expect($output)->not->toContain('Laravel Safeguard Security Check');
+
+    $decoded = json_decode($output, true);
+
+    expect($decoded)->toBeArray()
+        ->and($decoded['version'])->toBe('2.1.0')
+        ->and($decoded['runs'][0]['tool']['driver']['name'])->toBe('Laravel Safeguard')
+        ->and($decoded['runs'][0]['tool']['driver']['rules'])->toHaveCount($summary['total'])
+        ->and($decoded['runs'][0]['results'])->toHaveCount($failed)
+        ->and($decoded['runs'][0]['properties']['environment'])->toBe('testing')
+        ->and($exitCode)->toBe($summary['errors'] > 0 ? 1 : 0);
+
+    foreach ($decoded['runs'][0]['results'] as $result) {
+        expect($result['locations'])->not->toBeEmpty()
+            ->and($result['locations'][0]['physicalLocation']['artifactLocation']['uri'])->not->toStartWith('/');
+    }
+});
+
 it('falls back to CLI output for unknown formats', function () {
     $this->artisan(SafeguardCheckCommand::class, ['--format' => 'unknown'])
         ->expectsOutputToContain('Laravel Safeguard Security Check')

@@ -12,6 +12,7 @@ use Grazulex\LaravelSafeguard\Formatters\FormatterInterface;
 use Grazulex\LaravelSafeguard\Formatters\HtmlFormatter;
 use Grazulex\LaravelSafeguard\Formatters\JsonFormatter;
 use Grazulex\LaravelSafeguard\Formatters\JunitFormatter;
+use Grazulex\LaravelSafeguard\Formatters\SarifFormatter;
 use Grazulex\LaravelSafeguard\SafeguardResult;
 use Grazulex\LaravelSafeguard\Services\SafeguardManager;
 use Illuminate\Console\Command;
@@ -24,7 +25,7 @@ class SafeguardCheckCommand extends Command
 {
     protected $signature = 'safeguard:check
                             {--env= : Specific environment to check rules for}
-                            {--format=cli : Output format (cli, json, junit, html)}
+                            {--format=cli : Output format (cli, json, junit, html, sarif)}
                             {--fail-on-error : Exit with error code if any rule fails}
                             {--ci : CI-friendly output (no colors, compact)}
                             {--env-rules : Use environment-specific rules only}
@@ -64,6 +65,7 @@ class SafeguardCheckCommand extends Command
             'json' => new JsonFormatter,
             'junit' => new JunitFormatter,
             'html' => new HtmlFormatter,
+            'sarif' => new SarifFormatter,
             default => null,
         };
 
@@ -177,7 +179,7 @@ class SafeguardCheckCommand extends Command
     }
 
     /**
-     * Render the results with a machine-readable formatter (json, junit, html).
+     * Render the results with a machine-readable formatter (json, junit, html, sarif).
      * Exits with 1 when errors/critical issues are found; warnings alone do not fail.
      */
     private function outputFormatted(FormatterInterface $formatter, Collection $results): int
